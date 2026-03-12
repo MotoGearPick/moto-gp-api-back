@@ -1,0 +1,37 @@
+import { optionalEnv, requireEnv } from './util';
+
+export interface AppConfig {
+  PORT: number;
+  APP_ENV: string;
+  APP_URL: string;
+  CORS_URLS: string;
+
+  APP_DATABASE_URL: string;
+  PRODUCTS_DATABASE_URL: string;
+
+  JWT_ADMIN_ACCESS_SECRET: string;
+  JWT_ADMIN_REFRESH_SECRET: string;
+  JWT_ADMIN_RESET_SECRET: string;
+
+  JWT_ADMIN_ACCESS_EXPIRES: string;
+  JWT_ADMIN_REFRESH_EXPIRES: string;
+  JWT_ADMIN_RESET_EXPIRES: string;
+}
+
+export const config = (): AppConfig => ({
+  PORT: Number(optionalEnv('PORT', '3000')),
+  APP_ENV: optionalEnv('APP_ENV', 'local'),
+  APP_URL: requireEnv('APP_URL'),
+  CORS_URLS: optionalEnv('CORS_URLS', ''),
+
+  APP_DATABASE_URL: requireEnv('APP_DATABASE_URL'),
+  PRODUCTS_DATABASE_URL: requireEnv('PRODUCTS_DATABASE_URL'),
+
+  JWT_ADMIN_ACCESS_SECRET: requireEnv('JWT_ADMIN_ACCESS_SECRET'),
+  JWT_ADMIN_REFRESH_SECRET: requireEnv('JWT_ADMIN_REFRESH_SECRET'),
+  JWT_ADMIN_RESET_SECRET: requireEnv('JWT_ADMIN_RESET_SECRET'),
+
+  JWT_ADMIN_ACCESS_EXPIRES: optionalEnv('JWT_ADMIN_ACCESS_EXPIRES', '15m'),
+  JWT_ADMIN_REFRESH_EXPIRES: optionalEnv('JWT_ADMIN_REFRESH_EXPIRES', '7d'),
+  JWT_ADMIN_RESET_EXPIRES: optionalEnv('JWT_ADMIN_RESET_EXPIRES', '1h'),
+});

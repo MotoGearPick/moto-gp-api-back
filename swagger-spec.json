@@ -1,0 +1,1781 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/gear/helmets": {
+      "get": {
+        "description": "Retorna cascos activos con sus variantes, tallas y precio mínimo por tienda. Soporta múltiples filtros.",
+        "operationId": "HelmetModelsController_findAll",
+        "parameters": [
+          {
+            "name": "brandSlug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "full_face",
+                "modular",
+                "open_face",
+                "half",
+                "off_road"
+              ]
+            }
+          },
+          {
+            "name": "shellMaterial",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "polycarbonate",
+                "fiberglass",
+                "carbon_fiber"
+              ]
+            }
+          },
+          {
+            "name": "closureType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "double_d_ring",
+                "micrometric",
+                "quick_release",
+                "magnetic",
+                "pinch_buckle"
+              ]
+            }
+          },
+          {
+            "name": "visorPinlock",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pinlock_30",
+                "pinlock_30_max_vision",
+                "pinlock_70",
+                "pinlock_70_max_vision",
+                "pinlock_120",
+                "pinlock_120_max_vision",
+                "pinlock_evo",
+                "pinlock_protectint",
+                "included_unknown",
+                "not_included",
+                "not_compatible"
+              ]
+            }
+          },
+          {
+            "name": "certification",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "dot",
+                  "snell",
+                  "ece_2206",
+                  "ece_2205",
+                  "fim"
+                ]
+              }
+            }
+          },
+          {
+            "name": "colorFamily",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "black",
+                "white",
+                "red",
+                "blue",
+                "green",
+                "yellow",
+                "orange",
+                "pink",
+                "purple",
+                "grey",
+                "silver",
+                "gold",
+                "brown",
+                "carbon",
+                "multicolor",
+                "bronze",
+                "hi_vis"
+              ]
+            }
+          },
+          {
+            "name": "sunVisor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "intercomReady",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "minSafetyRating",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxWeightGrams",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "minPrice",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "includeDeleted",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada de cascos"
+          }
+        },
+        "summary": "Listar cascos",
+        "tags": [
+          "Helmets"
+        ]
+      }
+    },
+    "/api/gear/helmets/{id}": {
+      "get": {
+        "description": "Retorna el detalle completo de un casco con todas sus variantes y tallas.",
+        "operationId": "HelmetModelsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del casco"
+          },
+          "404": {
+            "description": "Casco no encontrado"
+          }
+        },
+        "summary": "Obtener casco por ID",
+        "tags": [
+          "Helmets"
+        ]
+      }
+    },
+    "/api/admin/gear/helmets": {
+      "get": {
+        "description": "Igual que el endpoint público pero incluye campos internos (SKU, deletedAt). Usa `includeDeleted=true` para ver eliminados.",
+        "operationId": "HelmetModelsAdminController_findAll",
+        "parameters": [
+          {
+            "name": "brandSlug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "full_face",
+                "modular",
+                "open_face",
+                "half",
+                "off_road"
+              ]
+            }
+          },
+          {
+            "name": "shellMaterial",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "polycarbonate",
+                "fiberglass",
+                "carbon_fiber"
+              ]
+            }
+          },
+          {
+            "name": "closureType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "double_d_ring",
+                "micrometric",
+                "quick_release",
+                "magnetic",
+                "pinch_buckle"
+              ]
+            }
+          },
+          {
+            "name": "visorPinlock",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pinlock_30",
+                "pinlock_30_max_vision",
+                "pinlock_70",
+                "pinlock_70_max_vision",
+                "pinlock_120",
+                "pinlock_120_max_vision",
+                "pinlock_evo",
+                "pinlock_protectint",
+                "included_unknown",
+                "not_included",
+                "not_compatible"
+              ]
+            }
+          },
+          {
+            "name": "certification",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "dot",
+                  "snell",
+                  "ece_2206",
+                  "ece_2205",
+                  "fim"
+                ]
+              }
+            }
+          },
+          {
+            "name": "colorFamily",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "black",
+                "white",
+                "red",
+                "blue",
+                "green",
+                "yellow",
+                "orange",
+                "pink",
+                "purple",
+                "grey",
+                "silver",
+                "gold",
+                "brown",
+                "carbon",
+                "multicolor",
+                "bronze",
+                "hi_vis"
+              ]
+            }
+          },
+          {
+            "name": "sunVisor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "intercomReady",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "minSafetyRating",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxWeightGrams",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "minPrice",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "includeDeleted",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada de cascos (vista admin)"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Listar cascos",
+        "tags": [
+          "Admin — Helmets"
+        ]
+      },
+      "post": {
+        "operationId": "HelmetModelsAdminController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHelmetModelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Casco creado correctamente"
+          },
+          "400": {
+            "description": "Datos inválidos"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Crear modelo de casco",
+        "tags": [
+          "Admin — Helmets"
+        ]
+      }
+    },
+    "/api/admin/gear/helmets/{id}": {
+      "get": {
+        "description": "Incluye todos los campos internos y variantes eliminadas.",
+        "operationId": "HelmetModelsAdminController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle completo del casco (vista admin)"
+          },
+          "404": {
+            "description": "Casco no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Obtener casco por ID",
+        "tags": [
+          "Admin — Helmets"
+        ]
+      },
+      "put": {
+        "description": "Todos los campos son opcionales (actualización parcial).",
+        "operationId": "HelmetModelsAdminController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHelmetModelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Casco actualizado"
+          },
+          "404": {
+            "description": "Casco no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Actualizar modelo de casco",
+        "tags": [
+          "Admin — Helmets"
+        ]
+      },
+      "delete": {
+        "description": "Marca el casco como eliminado sin borrarlo de la base de datos. Restaurable con /restore.",
+        "operationId": "HelmetModelsAdminController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Casco eliminado (soft delete)"
+          },
+          "404": {
+            "description": "Casco no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Eliminar casco (soft delete)",
+        "tags": [
+          "Admin — Helmets"
+        ]
+      }
+    },
+    "/api/admin/gear/helmets/{id}/restore": {
+      "post": {
+        "description": "Revierte el soft delete, el casco vuelve al estado activo.",
+        "operationId": "HelmetModelsAdminController_restore",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Casco restaurado"
+          },
+          "404": {
+            "description": "Casco no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Restaurar casco eliminado",
+        "tags": [
+          "Admin — Helmets"
+        ]
+      }
+    },
+    "/api/admin/gear/helmets/{modelId}/variants": {
+      "get": {
+        "description": "Retorna todas las variantes (colores) del modelo con tallas e inventario.",
+        "operationId": "HelmetVariantsAdminController_findAll",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeDeleted",
+            "required": false,
+            "in": "query",
+            "description": "Incluir variantes con soft delete",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de variantes"
+          },
+          "404": {
+            "description": "Modelo no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Listar variantes de un casco",
+        "tags": [
+          "Admin — Helmet Variants"
+        ]
+      },
+      "post": {
+        "description": "Agrega un nuevo color/variante al modelo de casco.",
+        "operationId": "HelmetVariantsAdminController_create",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHelmetVariantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Variante creada"
+          },
+          "404": {
+            "description": "Modelo no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Crear variante",
+        "tags": [
+          "Admin — Helmet Variants"
+        ]
+      }
+    },
+    "/api/admin/gear/helmets/{modelId}/variants/{variantId}": {
+      "get": {
+        "operationId": "HelmetVariantsAdminController_findOne",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "description": "UUID de la variante",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle de la variante con tallas e inventario"
+          },
+          "404": {
+            "description": "Variante o modelo no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Obtener variante por ID",
+        "tags": [
+          "Admin — Helmet Variants"
+        ]
+      },
+      "put": {
+        "description": "Todos los campos son opcionales.",
+        "operationId": "HelmetVariantsAdminController_update",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "description": "UUID de la variante",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHelmetVariantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Variante actualizada"
+          },
+          "404": {
+            "description": "Variante o modelo no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Actualizar variante",
+        "tags": [
+          "Admin — Helmet Variants"
+        ]
+      },
+      "delete": {
+        "description": "Restaurable con /:variantId/restore.",
+        "operationId": "HelmetVariantsAdminController_remove",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "description": "UUID de la variante",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Variante eliminada (soft delete)"
+          },
+          "404": {
+            "description": "Variante o modelo no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Eliminar variante (soft delete)",
+        "tags": [
+          "Admin — Helmet Variants"
+        ]
+      }
+    },
+    "/api/admin/gear/helmets/{modelId}/variants/{variantId}/restore": {
+      "post": {
+        "operationId": "HelmetVariantsAdminController_restore",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "description": "UUID de la variante",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Variante restaurada"
+          },
+          "404": {
+            "description": "Variante o modelo no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Restaurar variante eliminada",
+        "tags": [
+          "Admin — Helmet Variants"
+        ]
+      }
+    },
+    "/api/admin/gear/helmets/{modelId}/sizes": {
+      "get": {
+        "description": "Retorna las tallas disponibles con su inventario detallado por tienda.",
+        "operationId": "HelmetSizesAdminController_findAll",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de tallas con inventario"
+          },
+          "404": {
+            "description": "Modelo no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Listar tallas de un modelo",
+        "tags": [
+          "Admin — Helmet Sizes"
+        ]
+      },
+      "post": {
+        "operationId": "HelmetSizesAdminController_create",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHelmetSizeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Talla creada"
+          },
+          "400": {
+            "description": "Talla ya existe para este modelo"
+          },
+          "404": {
+            "description": "Modelo no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Agregar talla a un modelo",
+        "tags": [
+          "Admin — Helmet Sizes"
+        ]
+      }
+    },
+    "/api/admin/gear/helmets/{modelId}/sizes/{sizeId}": {
+      "delete": {
+        "description": "Elimina permanentemente la talla y su inventario asociado (cascade). No tiene restore.",
+        "operationId": "HelmetSizesAdminController_remove",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sizeId",
+            "required": true,
+            "in": "path",
+            "description": "UUID de la talla",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Talla eliminada"
+          },
+          "404": {
+            "description": "Talla o modelo no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Eliminar talla",
+        "tags": [
+          "Admin — Helmet Sizes"
+        ]
+      }
+    },
+    "/api/admin/gear/helmets/inventory": {
+      "post": {
+        "description": "Crea un registro de precio y stock para una talla específica en una tienda afiliada. La combinación sizeId + storeId debe ser única.",
+        "operationId": "HelmetInventoryAdminController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHelmetInventoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Inventario creado"
+          },
+          "400": {
+            "description": "Combinación talla+tienda ya existe o datos inválidos"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Agregar entrada de inventario",
+        "tags": [
+          "Admin — Helmet Inventory"
+        ]
+      }
+    },
+    "/api/admin/gear/helmets/inventory/{id}": {
+      "put": {
+        "description": "Actualiza precio, stock o URL de afiliado. Registra `lastChecked` automáticamente. Todos los campos son opcionales.",
+        "operationId": "HelmetInventoryAdminController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID del registro de inventario",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHelmetInventoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Inventario actualizado"
+          },
+          "404": {
+            "description": "Registro no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Actualizar inventario",
+        "tags": [
+          "Admin — Helmet Inventory"
+        ]
+      },
+      "delete": {
+        "description": "Elimina permanentemente el registro de precio/stock de una tienda para una talla.",
+        "operationId": "HelmetInventoryAdminController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID del registro de inventario",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Inventario eliminado"
+          },
+          "404": {
+            "description": "Registro no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Eliminar inventario",
+        "tags": [
+          "Admin — Helmet Inventory"
+        ]
+      }
+    },
+    "/api/admin/auth/login": {
+      "post": {
+        "operationId": "AuthAdminController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginAdminDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login exitoso, retorna el token de acceso"
+          },
+          "401": {
+            "description": "Credenciales inválidas"
+          }
+        },
+        "summary": "[Admin] Iniciar sesión",
+        "tags": [
+          "Admin — Auth"
+        ]
+      }
+    },
+    "/api/admin/auth/register": {
+      "post": {
+        "operationId": "AuthAdminController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterAdminDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuario admin creado"
+          },
+          "409": {
+            "description": "Email ya en uso"
+          }
+        },
+        "summary": "[Admin] Registrar nuevo usuario admin",
+        "tags": [
+          "Admin — Auth"
+        ]
+      }
+    },
+    "/api/admin/auth/users": {
+      "get": {
+        "operationId": "AuthAdminController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de usuarios"
+          },
+          "401": {
+            "description": "No autorizado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Listar todos los usuarios",
+        "tags": [
+          "Admin — Auth"
+        ]
+      }
+    },
+    "/api/admin/auth/users/{id}": {
+      "get": {
+        "operationId": "AuthAdminController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID del usuario",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del usuario"
+          },
+          "401": {
+            "description": "No autorizado"
+          },
+          "404": {
+            "description": "Usuario no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Obtener usuario por ID",
+        "tags": [
+          "Admin — Auth"
+        ]
+      },
+      "delete": {
+        "operationId": "AuthAdminController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID del usuario",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Usuario eliminado"
+          },
+          "401": {
+            "description": "No autorizado"
+          },
+          "404": {
+            "description": "Usuario no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Eliminar usuario",
+        "tags": [
+          "Admin — Auth"
+        ]
+      }
+    },
+    "/api/admin/backup/products": {
+      "get": {
+        "description": "Exporta todas las tablas de la base de datos de productos como un archivo JSON descargable.",
+        "operationId": "BackupController_downloadProductsBackup",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Archivo JSON de respaldo"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Descargar respaldo de la base de datos de productos",
+        "tags": [
+          "Admin — Backup"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Moto Gear Picker API",
+    "description": "API para selección y gestión de equipamiento de moto",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "CreateHelmetModelDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "brandId": {
+            "type": "string"
+          },
+          "helmetType": {
+            "type": "string",
+            "enum": [
+              "full_face",
+              "modular",
+              "open_face",
+              "half",
+              "off_road"
+            ]
+          },
+          "safetyRating": {
+            "type": "number",
+            "minimum": 1
+          },
+          "shellMaterial": {
+            "type": "string",
+            "enum": [
+              "polycarbonate",
+              "fiberglass",
+              "carbon_fiber"
+            ]
+          },
+          "shellSizes": {
+            "type": "number",
+            "minimum": 1
+          },
+          "weightGrams": {
+            "type": "number",
+            "minimum": 0
+          },
+          "visorAntiScratch": {
+            "type": "boolean"
+          },
+          "visorAntiFog": {
+            "type": "boolean"
+          },
+          "visorPinlock": {
+            "type": "string",
+            "enum": [
+              "pinlock_30",
+              "pinlock_30_max_vision",
+              "pinlock_70",
+              "pinlock_70_max_vision",
+              "pinlock_120",
+              "pinlock_120_max_vision",
+              "pinlock_evo",
+              "pinlock_protectint",
+              "included_unknown",
+              "not_included",
+              "not_compatible"
+            ]
+          },
+          "sunVisor": {
+            "type": "boolean"
+          },
+          "sunVisorType": {
+            "type": "string"
+          },
+          "intercomReady": {
+            "type": "boolean"
+          },
+          "intercomDesignedBrand": {
+            "type": "string"
+          },
+          "intercomDesignedModel": {
+            "type": "string"
+          },
+          "removableLining": {
+            "type": "boolean"
+          },
+          "washableLining": {
+            "type": "boolean"
+          },
+          "emergencyRelease": {
+            "type": "boolean"
+          },
+          "closureType": {
+            "type": "string",
+            "enum": [
+              "double_d_ring",
+              "micrometric",
+              "quick_release",
+              "magnetic",
+              "pinch_buckle"
+            ]
+          },
+          "certification": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "dot",
+                "snell",
+                "ece_2206",
+                "ece_2205",
+                "fim"
+              ]
+            }
+          }
+        },
+        "required": [
+          "name",
+          "slug",
+          "brandId",
+          "helmetType"
+        ]
+      },
+      "UpdateHelmetModelDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "brandId": {
+            "type": "string"
+          },
+          "helmetType": {
+            "type": "string",
+            "enum": [
+              "full_face",
+              "modular",
+              "open_face",
+              "half",
+              "off_road"
+            ]
+          },
+          "safetyRating": {
+            "type": "number",
+            "minimum": 1
+          },
+          "shellMaterial": {
+            "type": "string",
+            "enum": [
+              "polycarbonate",
+              "fiberglass",
+              "carbon_fiber"
+            ]
+          },
+          "shellSizes": {
+            "type": "number",
+            "minimum": 1
+          },
+          "weightGrams": {
+            "type": "number",
+            "minimum": 0
+          },
+          "visorAntiScratch": {
+            "type": "boolean"
+          },
+          "visorAntiFog": {
+            "type": "boolean"
+          },
+          "visorPinlock": {
+            "type": "string",
+            "enum": [
+              "pinlock_30",
+              "pinlock_30_max_vision",
+              "pinlock_70",
+              "pinlock_70_max_vision",
+              "pinlock_120",
+              "pinlock_120_max_vision",
+              "pinlock_evo",
+              "pinlock_protectint",
+              "included_unknown",
+              "not_included",
+              "not_compatible"
+            ]
+          },
+          "sunVisor": {
+            "type": "boolean"
+          },
+          "sunVisorType": {
+            "type": "string"
+          },
+          "intercomReady": {
+            "type": "boolean"
+          },
+          "intercomDesignedBrand": {
+            "type": "string"
+          },
+          "intercomDesignedModel": {
+            "type": "string"
+          },
+          "removableLining": {
+            "type": "boolean"
+          },
+          "washableLining": {
+            "type": "boolean"
+          },
+          "emergencyRelease": {
+            "type": "boolean"
+          },
+          "closureType": {
+            "type": "string",
+            "enum": [
+              "double_d_ring",
+              "micrometric",
+              "quick_release",
+              "magnetic",
+              "pinch_buckle"
+            ]
+          },
+          "certification": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "dot",
+                "snell",
+                "ece_2206",
+                "ece_2205",
+                "fim"
+              ]
+            }
+          }
+        }
+      },
+      "CreateHelmetVariantDto": {
+        "type": "object",
+        "properties": {
+          "colorName": {
+            "type": "string"
+          },
+          "colorFamilies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "black",
+                "white",
+                "red",
+                "blue",
+                "green",
+                "yellow",
+                "orange",
+                "pink",
+                "purple",
+                "grey",
+                "silver",
+                "gold",
+                "brown",
+                "carbon",
+                "multicolor",
+                "bronze",
+                "hi_vis"
+              ]
+            }
+          },
+          "finish": {
+            "type": "string",
+            "enum": [
+              "gloss",
+              "matte",
+              "satin"
+            ]
+          },
+          "graphicName": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "colorName",
+          "colorFamilies"
+        ]
+      },
+      "UpdateHelmetVariantDto": {
+        "type": "object",
+        "properties": {
+          "colorName": {
+            "type": "string"
+          },
+          "colorFamilies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "black",
+                "white",
+                "red",
+                "blue",
+                "green",
+                "yellow",
+                "orange",
+                "pink",
+                "purple",
+                "grey",
+                "silver",
+                "gold",
+                "brown",
+                "carbon",
+                "multicolor",
+                "bronze",
+                "hi_vis"
+              ]
+            }
+          },
+          "finish": {
+            "type": "string",
+            "enum": [
+              "gloss",
+              "matte",
+              "satin"
+            ]
+          },
+          "graphicName": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CreateHelmetSizeDto": {
+        "type": "object",
+        "properties": {
+          "sizeLabel": {
+            "type": "string",
+            "pattern": "/^(XXS|XS|S|M|L|XL|XXL|XXXL|[0-9]{2,3})$/"
+          }
+        },
+        "required": [
+          "sizeLabel"
+        ]
+      },
+      "CreateHelmetInventoryDto": {
+        "type": "object",
+        "properties": {
+          "sizeId": {
+            "type": "string"
+          },
+          "storeId": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string",
+            "default": "USD"
+          },
+          "inStock": {
+            "type": "boolean"
+          },
+          "affiliateUrl": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "sizeId",
+          "storeId",
+          "price",
+          "inStock",
+          "affiliateUrl"
+        ]
+      },
+      "UpdateHelmetInventoryDto": {
+        "type": "object",
+        "properties": {
+          "sizeId": {
+            "type": "string"
+          },
+          "storeId": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string",
+            "default": "USD"
+          },
+          "inStock": {
+            "type": "boolean"
+          },
+          "affiliateUrl": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "LoginAdminDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "admin@motogear.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "example": "supersecret123"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "RegisterAdminDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "admin@motogear.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "example": "supersecret123"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "password"
+        ]
+      }
+    }
+  }
+}

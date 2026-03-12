@@ -1,0 +1,222 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/@prisma/products-client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model affiliate_store {
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String             @db.VarChar(100)
+  domain            String             @unique @db.VarChar(100)
+  logo_url          String?
+  affiliate_program String?            @db.VarChar(100)
+  commission_pct    Decimal?           @db.Decimal(5, 2)
+  created_at        DateTime           @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime           @default(now()) @db.Timestamptz(6)
+  deleted_at        DateTime?          @db.Timestamptz(6)
+  helmet_inventory  helmet_inventory[]
+}
+
+model brand {
+  id                                                                 String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                                                               String                       @unique @db.VarChar(100)
+  slug                                                               String                       @unique @db.VarChar(100)
+  created_at                                                         DateTime                     @default(now()) @db.Timestamptz(6)
+  updated_at                                                         DateTime                     @default(now()) @db.Timestamptz(6)
+  deleted_at                                                         DateTime?                    @db.Timestamptz(6)
+  helmet_model                                                       helmet_model[]
+  helmet_size_chart_by_brand_helmet_size_chart_by_brand_brandTobrand helmet_size_chart_by_brand[] @relation("helmet_size_chart_by_brand_brandTobrand")
+}
+
+model helmet_inventory {
+  id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  size_id              String                @db.Uuid
+  store_id             String                @db.Uuid
+  price                Decimal               @db.Decimal(10, 2)
+  currency             String                @default("USD") @db.VarChar(3)
+  in_stock             Boolean               @default(true)
+  affiliate_url        String
+  last_checked         DateTime              @default(now()) @db.Timestamptz(6)
+  created_at           DateTime              @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime              @default(now()) @db.Timestamptz(6)
+  variant_id           String?               @db.Uuid
+  helmet_size          helmet_model_size     @relation(fields: [size_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  affiliate_store      affiliate_store       @relation(fields: [store_id], references: [id], onDelete: Cascade)
+  helmet_model_variant helmet_model_variant? @relation(fields: [variant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([size_id, store_id])
+  @@index([in_stock])
+  @@index([size_id])
+  @@index([store_id])
+}
+
+model helmet_model {
+  id                      String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug                    String                 @db.VarChar
+  name                    String                 @db.VarChar
+  brand_id                String                 @db.Uuid
+  helmet_type             helmet_type
+  safety_rating           Int?
+  shell_material          helmet_shell_material?
+  shell_sizes             Int?
+  weight_grams            Int?
+  visor_anti_scratch      Boolean                @default(false)
+  visor_anti_fog          Boolean                @default(false)
+  sun_visor               Boolean                @default(false)
+  sun_visor_type          String?                @db.VarChar(150)
+  intercom_ready          Boolean                @default(false)
+  intercom_designed_brand String?                @db.VarChar(100)
+  intercom_designed_model String?                @db.VarChar(100)
+  removable_lining        Boolean                @default(true)
+  washable_lining         Boolean                @default(true)
+  emergency_release       Boolean                @default(false)
+  closure_type            helmet_closure_type?
+  certification           helmet_certification[]
+  created_at              DateTime               @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime               @default(now()) @db.Timestamptz(6)
+  visor_pinlock           visor_pinlock          @default(not_compatible)
+  deleted_at              DateTime?              @db.Timestamptz(6)
+  brand                   brand                  @relation(fields: [brand_id], references: [id], onDelete: Cascade)
+  helmet_model_size       helmet_model_size[]
+  helmet_model_variant    helmet_model_variant[]
+
+  @@unique([brand_id, name])
+  @@unique([brand_id, slug])
+  @@index([helmet_type])
+}
+
+model helmet_size_chart_by_brand {
+  id                                            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  brand                                         String   @db.Uuid
+  size_label                                    String   @db.VarChar(10)
+  head_min_cm                                   Decimal  @db.Decimal(4, 1)
+  head_max_cm                                   Decimal  @db.Decimal(4, 1)
+  created_at                                    DateTime @default(now()) @db.Timestamptz(6)
+  updated_at                                    DateTime @default(now()) @db.Timestamptz(6)
+  brand_helmet_size_chart_by_brand_brandTobrand brand    @relation("helmet_size_chart_by_brand_brandTobrand", fields: [brand], references: [id], onDelete: Cascade)
+
+  @@unique([brand, size_label])
+}
+
+model scrape_review {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  source_url     String
+  source         String        @default("brand-site") @db.VarChar(50)
+  raw_data       Json
+  edited_data    Json?
+  status         review_status @default(pending)
+  notes          String?
+  created_at     DateTime      @default(now()) @db.Timestamptz(6)
+  reviewed_at    DateTime?     @db.Timestamptz(6)
+  source_content String?
+
+  @@index([status])
+}
+
+model helmet_model_size {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  model_id         String             @db.Uuid
+  size_label       String             @db.VarChar
+  created_at       DateTime           @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime           @default(now()) @db.Timestamptz(6)
+  helmet_inventory helmet_inventory[]
+  helmet_model     helmet_model       @relation(fields: [model_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model helmet_model_variant {
+  id               String             @id(map: "helmet_variant_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  helmet_id        String             @db.Uuid
+  color_name       String             @db.VarChar(100)
+  finish           helmet_finish?
+  graphic_name     String?            @db.VarChar(100)
+  sku              String?            @db.VarChar(100)
+  image_url        String[]
+  created_at       DateTime           @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime           @default(now()) @db.Timestamptz(6)
+  color_families   color_family[]
+  deleted_at       DateTime?          @db.Timestamptz(6)
+  helmet_inventory helmet_inventory[]
+  helmet_model     helmet_model       @relation(fields: [helmet_id], references: [id], onDelete: Cascade, map: "helmet_variant_helmet_id_fkey")
+
+  @@unique([helmet_id, color_name], map: "helmet_variant_helmet_id_color_name_key")
+  @@index([helmet_id], map: "helmet_variant_helmet_id_idx")
+}
+
+enum color_family {
+  black
+  white
+  red
+  blue
+  green
+  yellow
+  orange
+  pink
+  purple
+  grey
+  silver
+  gold
+  brown
+  carbon
+  multicolor
+  bronze
+  hi_vis
+}
+
+enum helmet_certification {
+  dot
+  snell
+  ece_2206
+  ece_2205
+  fim
+}
+
+enum helmet_closure_type {
+  double_d_ring
+  micrometric
+  quick_release
+  magnetic
+  pinch_buckle
+}
+
+enum helmet_finish {
+  gloss
+  matte
+  satin
+}
+
+enum helmet_shell_material {
+  polycarbonate
+  fiberglass
+  carbon_fiber
+}
+
+enum helmet_type {
+  full_face
+  modular
+  open_face
+  half
+  off_road
+}
+
+enum review_status {
+  pending
+  approved
+  rejected
+}
+
+enum visor_pinlock {
+  pinlock_30
+  pinlock_30_max_vision
+  pinlock_70
+  pinlock_70_max_vision
+  pinlock_120
+  pinlock_120_max_vision
+  pinlock_evo
+  pinlock_protectint
+  included_unknown
+  not_included
+  not_compatible
+}
