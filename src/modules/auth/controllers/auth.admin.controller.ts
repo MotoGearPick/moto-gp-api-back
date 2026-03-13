@@ -34,9 +34,12 @@ export class AuthAdminController {
   }
 
   @Post('register')
+  @UseGuards(AdminAccessTokenGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Registrar nuevo usuario admin' })
   @ApiBody({ type: RegisterAdminDto })
   @ApiResponse({ status: 201, description: 'Usuario admin creado' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiResponse({ status: 409, description: 'Email ya en uso' })
   register(@Body() dto: RegisterAdminDto) {
     return this.service.register(dto);

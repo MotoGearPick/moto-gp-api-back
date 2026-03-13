@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProductsPrismaService } from '../../../../prisma/products-prisma.service';
 import { CreateHelmetSizeDto } from './dto/create-helmet-size.dto';
+import { UpdateHelmetSizeDto } from './dto/update-helmet-size.dto';
 
 @Injectable()
 export class HelmetSizesService {
@@ -29,6 +30,22 @@ export class HelmetSizesService {
         model_id: modelId,
         size_label: dto.sizeLabel,
       },
+    });
+  }
+
+  async update(modelId: string, sizeId: string, dto: UpdateHelmetSizeDto) {
+    await this.assertModelExists(modelId);
+
+    const size = await this.db.helmet_model_size.findFirst({
+      where: { id: sizeId, model_id: modelId },
+    });
+
+    if (!size)
+      throw new NotFoundException(`Size #${sizeId} not found for model #${modelId}`);
+
+    return this.db.helmet_model_size.update({
+      where: { id: sizeId },
+      data: { size_label: dto.sizeLabel },
     });
   }
 

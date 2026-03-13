@@ -2,17 +2,18 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
   HttpCode,
   HttpStatus,
   Param,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AdminAccessTokenGuard } from '../../../auth/guards';
 import { HelmetSizesService } from './helmet-sizes.service';
 import { CreateHelmetSizeDto } from './dto/create-helmet-size.dto';
+import { UpdateHelmetSizeDto } from './dto/update-helmet-size.dto';
 
 @UseGuards(AdminAccessTokenGuard)
 @ApiBearerAuth()
@@ -20,18 +21,6 @@ import { CreateHelmetSizeDto } from './dto/create-helmet-size.dto';
 @Controller('admin/gear/helmets/:modelId/sizes')
 export class HelmetSizesAdminController {
   constructor(private readonly service: HelmetSizesService) {}
-
-  @Get()
-  @ApiOperation({
-    summary: '[Admin] Listar tallas de un modelo',
-    description: 'Retorna las tallas disponibles con su inventario detallado por tienda.',
-  })
-  @ApiParam({ name: 'modelId', description: 'UUID del modelo de casco' })
-  @ApiResponse({ status: 200, description: 'Lista de tallas con inventario' })
-  @ApiResponse({ status: 404, description: 'Modelo no encontrado' })
-  findAll(@Param('modelId') modelId: string) {
-    return this.service.findAll(modelId);
-  }
 
   @Post()
   @ApiOperation({ summary: '[Admin] Agregar talla a un modelo' })
@@ -45,6 +34,21 @@ export class HelmetSizesAdminController {
     @Body() dto: CreateHelmetSizeDto,
   ) {
     return this.service.create(modelId, dto);
+  }
+
+  @Put(':sizeId')
+  @ApiOperation({ summary: '[Admin] Editar talla' })
+  @ApiParam({ name: 'modelId', description: 'UUID del modelo de casco' })
+  @ApiParam({ name: 'sizeId', description: 'UUID de la talla' })
+  @ApiBody({ type: UpdateHelmetSizeDto })
+  @ApiResponse({ status: 200, description: 'Talla actualizada' })
+  @ApiResponse({ status: 404, description: 'Talla o modelo no encontrado' })
+  update(
+    @Param('modelId') modelId: string,
+    @Param('sizeId') sizeId: string,
+    @Body() dto: UpdateHelmetSizeDto,
+  ) {
+    return this.service.update(modelId, sizeId, dto);
   }
 
   @Delete(':sizeId')
