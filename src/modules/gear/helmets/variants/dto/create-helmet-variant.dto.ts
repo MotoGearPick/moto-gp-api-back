@@ -29,5 +29,5 @@ export class CreateHelmetVariantDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  imageUrl?: string[];
+  images?: string[];
 }

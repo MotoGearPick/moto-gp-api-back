@@ -8,6 +8,16 @@ import { FilterHelmetModelsDto } from './dto/filter-helmet-models.dto';
 export class HelmetModelsController {
   constructor(private readonly service: HelmetModelsService) {}
 
+  @Get('brands')
+  @ApiOperation({
+    summary: 'Listar marcas con cascos',
+    description: 'Retorna solo las marcas que tienen al menos un modelo de casco activo.',
+  })
+  @ApiResponse({ status: 200, description: 'Lista de marcas' })
+  findBrands() {
+    return this.service.findBrands();
+  }
+
   @Get()
   @ApiOperation({
     summary: 'Listar cascos',

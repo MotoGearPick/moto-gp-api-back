@@ -21,7 +21,8 @@
     "prisma:migrate:app": "prisma migrate dev --config=prisma/app/prisma.config.ts",
     "prisma:migrate:app:prod": "prisma migrate deploy --config=prisma/app/prisma.config.ts",
     "prisma:studio:products": "prisma studio --config=prisma/products/prisma.config.ts",
-    "prisma:studio:app": "prisma studio --config=prisma/app/prisma.config.ts"
+    "prisma:studio:app": "prisma studio --config=prisma/app/prisma.config.ts",
+    "heroku-postbuild": "pnpm prisma:generate && pnpm build"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",

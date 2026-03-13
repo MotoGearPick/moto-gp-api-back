@@ -10,6 +10,23 @@ import { FilterHelmetVariantsDto } from './dto/filter-helmet-variants.dto';
 export class HelmetVariantsService {
   constructor(private readonly db: ProductsPrismaService) {}
 
+  async findAllAdmin(filters: FilterHelmetVariantsDto) {
+    const where = this.buildPublicWhere(filters, true);
+
+    const result = await paginate({
+      model: this.db.helmet_model_variant,
+      pagination: filters,
+      where,
+      orderBy: { color_name: 'asc' },
+      include: this.buildAdminInclude(),
+    });
+
+    return {
+      data: result.data.map((v) => this.mapAdminVariant(v)),
+      meta: result.meta,
+    };
+  }
+
   async findAllPublic(filters: FilterHelmetVariantsDto) {
     const where = this.buildPublicWhere(filters);
 
@@ -83,7 +100,7 @@ export class HelmetVariantsService {
         finish: dto.finish as any,
         graphic_name: dto.graphicName,
         sku: dto.sku,
-        image_url: dto.imageUrl ?? [],
+        image_url: dto.images ?? [],
       },
     });
   }
@@ -99,7 +116,7 @@ export class HelmetVariantsService {
         ...(dto.finish && { finish: dto.finish as any }),
         ...(dto.graphicName !== undefined && { graphic_name: dto.graphicName }),
         ...(dto.sku !== undefined && { sku: dto.sku }),
-        ...(dto.imageUrl && { image_url: dto.imageUrl }),
+        ...(dto.images !== undefined && { image_url: dto.images }),
         updated_at: new Date(),
       },
     });
@@ -130,7 +147,8 @@ export class HelmetVariantsService {
 
   // ─── Public helpers ───────────────────────────────────────────────────────
 
-  private buildPublicWhere(filters: FilterHelmetVariantsDto): Prisma.helmet_model_variantWhereInput {
+  private buildPublicWhere(filters: FilterHelmetVariantsDto, adminView = false): Prisma.helmet_model_variantWhereInput {
+    const showDeleted = adminView && filters.includeDeleted;
     const hasInventoryFilter =
       filters.minPrice !== undefined ||
       filters.maxPrice !== undefined ||
@@ -138,7 +156,7 @@ export class HelmetVariantsService {
       filters.sizeLabel !== undefined;
 
     return {
-      deleted_at: null,
+      ...(!showDeleted && { deleted_at: null }),
 
       // Variant filters
       ...(filters.colorFamily && { color_families: { has: filters.colorFamily as any } }),
@@ -146,7 +164,7 @@ export class HelmetVariantsService {
 
       // Model filters
       helmet_model: {
-        deleted_at: null,
+        ...(!showDeleted && { deleted_at: null }),
         ...(filters.modelId && { id: filters.modelId }),
         ...(filters.brandSlug && { brand: { slug: filters.brandSlug, deleted_at: null } }),
         ...(filters.type && { helmet_type: filters.type as any }),
@@ -186,6 +204,89 @@ export class HelmetVariantsService {
           { helmet_model: { brand: { name: { contains: filters.search, mode: 'insensitive' } } } },
         ],
       }),
+    };
+  }
+
+  private buildAdminInclude() {
+    return {
+      helmet_model: {
+        include: {
+          brand: { select: { id: true, name: true, slug: true } },
+          helmet_model_size: { select: { id: true, size_label: true } },
+        },
+      },
+      helmet_inventory: {
+        select: {
+          id: true,
+          price: true,
+          currency: true,
+          in_stock: true,
+          affiliate_url: true,
+          last_checked: true,
+          helmet_size: { select: { id: true, size_label: true } },
+          affiliate_store: { select: { id: true, name: true, domain: true } },
+        },
+        orderBy: { price: 'asc' as const },
+      },
+    };
+  }
+
+  private mapAdminVariant(v: any) {
+    const inventory = v.helmet_inventory ?? [];
+    const prices = inventory.map((i: any) => Number(i.price)).filter(Boolean);
+    const m = v.helmet_model;
+
+    return {
+      id: v.id,
+      sku: v.sku,
+      colorName: v.color_name,
+      colorFamilies: v.color_families,
+      finish: v.finish,
+      graphicName: v.graphic_name,
+      images: v.image_url,
+      deletedAt: v.deleted_at,
+      createdAt: v.created_at,
+      updatedAt: v.updated_at,
+      model: {
+        id: m.id,
+        name: m.name,
+        slug: m.slug,
+        brand: m.brand,
+        type: m.helmet_type,
+        safetyRating: m.safety_rating,
+        shellMaterial: m.shell_material,
+        shellSizes: m.shell_sizes,
+        weightGrams: m.weight_grams,
+        features: {
+          visorAntiScratch: m.visor_anti_scratch,
+          visorAntiFog: m.visor_anti_fog,
+          visorPinlock: m.visor_pinlock,
+          sunVisor: m.sun_visor,
+          sunVisorType: m.sun_visor_type,
+          intercomReady: m.intercom_ready,
+          intercomDesignedBrand: m.intercom_designed_brand,
+          intercomDesignedModel: m.intercom_designed_model,
+          removableLining: m.removable_lining,
+          washableLining: m.washable_lining,
+          emergencyRelease: m.emergency_release,
+          closureType: m.closure_type,
+        },
+        certification: m.certification,
+        sizes: m.helmet_model_size?.map((s: any) => ({ id: s.id, sizeLabel: s.size_label })),
+        deletedAt: m.deleted_at,
+      },
+      inventory: inventory.map((i: any) => ({
+        id: i.id,
+        size: i.helmet_size ? { id: i.helmet_size.id, sizeLabel: i.helmet_size.size_label } : null,
+        price: Number(i.price),
+        currency: i.currency,
+        inStock: i.in_stock,
+        affiliateUrl: i.affiliate_url,
+        lastChecked: i.last_checked,
+        store: i.affiliate_store,
+      })),
+      priceFrom: prices.length ? Math.min(...prices) : null,
+      inStock: inventory.some((i: any) => i.in_stock),
     };
   }
 

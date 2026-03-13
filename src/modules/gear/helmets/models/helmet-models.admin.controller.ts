@@ -14,7 +14,9 @@ import {
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AdminAccessTokenGuard } from '../../../auth/guards';
 import { HelmetModelsService } from './helmet-models.service';
+import { HelmetVariantsService } from '../variants/helmet-variants.service';
 import { FilterHelmetModelsDto } from './dto/filter-helmet-models.dto';
+import { FilterHelmetVariantsDto } from '../variants/dto/filter-helmet-variants.dto';
 import { CreateHelmetModelDto } from './dto/create-helmet-model.dto';
 import { UpdateHelmetModelDto } from './dto/update-helmet-model.dto';
 
@@ -23,7 +25,10 @@ import { UpdateHelmetModelDto } from './dto/update-helmet-model.dto';
 @ApiTags('Admin — Helmets')
 @Controller('admin/gear/helmets')
 export class HelmetModelsAdminController {
-  constructor(private readonly service: HelmetModelsService) {}
+  constructor(
+    private readonly service: HelmetModelsService,
+    private readonly variantsService: HelmetVariantsService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -33,6 +38,16 @@ export class HelmetModelsAdminController {
   @ApiResponse({ status: 200, description: 'Lista paginada de cascos (vista admin)' })
   findAll(@Query() filters: FilterHelmetModelsDto) {
     return this.service.findAll(filters, true);
+  }
+
+  @Get('variants')
+  @ApiOperation({
+    summary: '[Admin] Listar todas las variantes',
+    description: 'Lista plana de todas las variantes con su modelo. Usa `includeDeleted=true` para ver eliminadas.',
+  })
+  @ApiResponse({ status: 200, description: 'Lista paginada de variantes (vista admin)' })
+  findAllVariants(@Query() filters: FilterHelmetVariantsDto) {
+    return this.variantsService.findAllAdmin(filters);
   }
 
   @Get(':id')

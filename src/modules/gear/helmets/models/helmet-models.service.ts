@@ -10,6 +10,17 @@ import { UpdateHelmetModelDto } from './dto/update-helmet-model.dto';
 export class HelmetModelsService {
   constructor(private readonly db: ProductsPrismaService) {}
 
+  findBrands() {
+    return this.db.brand.findMany({
+      where: {
+        deleted_at: null,
+        helmet_model: { some: { deleted_at: null } },
+      },
+      select: { id: true, name: true, slug: true },
+      orderBy: { name: 'asc' },
+    });
+  }
+
   async findAll(filters: FilterHelmetModelsDto, adminView = false) {
     const where = this.buildWhere(filters, adminView);
 

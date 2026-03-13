@@ -163,4 +163,11 @@ export class FilterHelmetVariantsDto extends PaginationDto {
   @IsOptional()
   @IsString()
   sizeLabel?: string;
+
+  // Solo tiene efecto en el endpoint admin
+  @ApiPropertyOptional({ description: 'Incluir variantes y modelos con soft delete' })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  includeDeleted?: boolean;
 }
