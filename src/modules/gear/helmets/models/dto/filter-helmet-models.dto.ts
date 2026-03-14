@@ -1,5 +1,6 @@
 import { Transform, Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsEnum,
   IsInt,
@@ -23,20 +24,36 @@ export class FilterHelmetModelsDto extends PaginationDto {
   brandSlug?: string;
 
   @IsOptional()
-  @IsEnum(HelmetType)
-  type?: HelmetType;
+  @IsArray()
+  @IsEnum(HelmetType, { each: true })
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  type?: HelmetType[];
 
   @IsOptional()
-  @IsEnum(HelmetShellMaterial)
-  shellMaterial?: HelmetShellMaterial;
+  @IsArray()
+  @IsEnum(HelmetShellMaterial, { each: true })
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  shellMaterial?: HelmetShellMaterial[];
 
   @IsOptional()
   @IsEnum(HelmetClosureType)
   closureType?: HelmetClosureType;
 
   @IsOptional()
-  @IsEnum(VisorPinlock)
-  visorPinlock?: VisorPinlock;
+  @IsArray()
+  @IsEnum(VisorPinlock, { each: true })
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  visorPinlockCompatible?: VisorPinlock[];
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  visorPinlockIncluded?: boolean;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  tearOffCompatible?: boolean;
 
   @IsOptional()
   @IsEnum(HelmetCertification, { each: true })

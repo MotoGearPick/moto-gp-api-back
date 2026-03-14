@@ -1,7 +1,6 @@
 export enum VisorPinlock {
   // Pinlock 30
   PINLOCK_30 = 'pinlock_30',
-  PINLOCK_30_MAX_VISION = 'pinlock_30_max_vision',
 
   // Pinlock 70
   PINLOCK_70 = 'pinlock_70',
@@ -14,9 +13,9 @@ export enum VisorPinlock {
   // Especiales
   PINLOCK_EVO = 'pinlock_evo',
   PINLOCK_PROTECTINT = 'pinlock_protectint',
+  PINLOCK_MAX_VISION = 'pinlock_max_vision',
+  PINLOCK_READY = 'pinlock_ready',
 
   // Sin pinlock
-  INCLUDED_UNKNOWN = 'included_unknown',
-  NOT_INCLUDED = 'not_included',
   NOT_COMPATIBLE = 'not_compatible',
 }

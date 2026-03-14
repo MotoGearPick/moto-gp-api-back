@@ -26,8 +26,10 @@ export class CreateHelmetModelDto {
   @IsString()
   brandId: string;
 
-  @IsEnum(HelmetType)
-  helmetType: HelmetType;
+  @IsArray()
+  @IsEnum(HelmetType, { each: true })
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  helmetType: HelmetType[];
 
   @IsOptional()
   @IsInt()
@@ -35,8 +37,10 @@ export class CreateHelmetModelDto {
   safetyRating?: number;
 
   @IsOptional()
-  @IsEnum(HelmetShellMaterial)
-  shellMaterial?: HelmetShellMaterial;
+  @IsArray()
+  @IsEnum(HelmetShellMaterial, { each: true })
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  shellMaterial?: HelmetShellMaterial[];
 
   @IsOptional()
   @IsInt()
@@ -57,8 +61,22 @@ export class CreateHelmetModelDto {
   visorAntiFog?: boolean;
 
   @IsOptional()
-  @IsEnum(VisorPinlock)
-  visorPinlock?: VisorPinlock;
+  @IsArray()
+  @IsEnum(VisorPinlock, { each: true })
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  visorPinlockCompatible?: VisorPinlock[];
+
+  @IsOptional()
+  @IsBoolean()
+  visorPinlockIncluded?: boolean;
+
+  @IsOptional()
+  @IsString()
+  pinlockDksCode?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  tearOffCompatible?: boolean;
 
   @IsOptional()
   @IsBoolean()
@@ -101,4 +119,10 @@ export class CreateHelmetModelDto {
   @IsEnum(HelmetCertification, { each: true })
   @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
   certification?: HelmetCertification[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  includedAccessories?: string[];
 }
