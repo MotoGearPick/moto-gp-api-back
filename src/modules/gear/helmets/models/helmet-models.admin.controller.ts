@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   Query,
@@ -14,40 +15,25 @@ import {
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AdminAccessTokenGuard } from '../../../auth/guards';
 import { HelmetModelsService } from './helmet-models.service';
-import { HelmetVariantsService } from '../variants/helmet-variants.service';
-import { FilterHelmetModelsDto } from './dto/filter-helmet-models.dto';
-import { FilterHelmetVariantsDto } from '../variants/dto/filter-helmet-variants.dto';
 import { CreateHelmetModelDto } from './dto/create-helmet-model.dto';
 import { UpdateHelmetModelDto } from './dto/update-helmet-model.dto';
+import { FilterHelmetModelsAdminDto } from './dto/filter-helmet-models-admin.dto';
 
 @UseGuards(AdminAccessTokenGuard)
 @ApiBearerAuth()
 @ApiTags('Admin — Helmets')
 @Controller('admin/gear/helmets')
 export class HelmetModelsAdminController {
-  constructor(
-    private readonly service: HelmetModelsService,
-    private readonly variantsService: HelmetVariantsService,
-  ) {}
+  constructor(private readonly service: HelmetModelsService) {}
 
   @Get()
   @ApiOperation({
-    summary: '[Admin] Listar cascos',
-    description: 'Igual que el endpoint público pero incluye campos internos (SKU, deletedAt). Usa `includeDeleted=true` para ver eliminados.',
+    summary: '[Admin] Listar modelos de casco',
+    description: 'Listado plano de HelmetModel con filtros administrativos avanzados (sin relaciones de variantes).',
   })
-  @ApiResponse({ status: 200, description: 'Lista paginada de cascos (vista admin)' })
-  findAll(@Query() filters: FilterHelmetModelsDto) {
-    return this.service.findAll(filters, true);
-  }
-
-  @Get('variants')
-  @ApiOperation({
-    summary: '[Admin] Listar todas las variantes',
-    description: 'Lista plana de todas las variantes con su modelo. Usa `includeDeleted=true` para ver eliminadas.',
-  })
-  @ApiResponse({ status: 200, description: 'Lista paginada de variantes (vista admin)' })
-  findAllVariants(@Query() filters: FilterHelmetVariantsDto) {
-    return this.variantsService.findAllAdmin(filters);
+  @ApiResponse({ status: 200, description: 'Lista paginada de modelos (vista admin, sin variantes)' })
+  findAll(@Query() filters: FilterHelmetModelsAdminDto) {
+    return this.service.findAllModelsAdmin(filters);
   }
 
   @Get(':id')
@@ -58,7 +44,7 @@ export class HelmetModelsAdminController {
   @ApiParam({ name: 'id', description: 'UUID del modelo de casco' })
   @ApiResponse({ status: 200, description: 'Detalle completo del casco (vista admin)' })
   @ApiResponse({ status: 404, description: 'Casco no encontrado' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.findOne(id, true);
   }
 
@@ -80,7 +66,7 @@ export class HelmetModelsAdminController {
   @ApiBody({ type: UpdateHelmetModelDto })
   @ApiResponse({ status: 200, description: 'Casco actualizado' })
   @ApiResponse({ status: 404, description: 'Casco no encontrado' })
-  update(@Param('id') id: string, @Body() dto: UpdateHelmetModelDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateHelmetModelDto) {
     return this.service.update(id, dto);
   }
 
@@ -93,7 +79,7 @@ export class HelmetModelsAdminController {
   @ApiParam({ name: 'id', description: 'UUID del modelo de casco' })
   @ApiResponse({ status: 204, description: 'Casco eliminado (soft delete)' })
   @ApiResponse({ status: 404, description: 'Casco no encontrado' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.remove(id);
   }
 
@@ -105,7 +91,7 @@ export class HelmetModelsAdminController {
   @ApiParam({ name: 'id', description: 'UUID del modelo de casco' })
   @ApiResponse({ status: 201, description: 'Casco restaurado' })
   @ApiResponse({ status: 404, description: 'Casco no encontrado' })
-  restore(@Param('id') id: string) {
+  restore(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.restore(id);
   }
 }

@@ -16,15 +16,26 @@ import { AdminAccessTokenGuard } from '../../../auth/guards';
 import { HelmetVariantsService } from './helmet-variants.service';
 import { CreateHelmetVariantDto } from './dto/create-helmet-variant.dto';
 import { UpdateHelmetVariantDto } from './dto/update-helmet-variant.dto';
+import { FilterHelmetVariantsDto } from './dto/filter-helmet-variants.dto';
 
 @UseGuards(AdminAccessTokenGuard)
 @ApiBearerAuth()
 @ApiTags('Admin — Helmet Variants')
-@Controller('admin/gear/helmets/:modelId/variants')
+@Controller()
 export class HelmetVariantsAdminController {
   constructor(private readonly service: HelmetVariantsService) {}
 
-  @Get()
+  @Get('admin/gear/helmets/variants')
+  @ApiOperation({
+    summary: '[Admin] Listar todas las variantes',
+    description: 'Lista global paginada de variantes con filtros avanzados (incluye datos del modelo).',
+  })
+  @ApiResponse({ status: 200, description: 'Lista paginada de variantes (vista admin)' })
+  findAllGlobal(@Query() filters: FilterHelmetVariantsDto) {
+    return this.service.findAllAdmin(filters);
+  }
+
+  @Get('admin/gear/helmets/:modelId/variants')
   @ApiOperation({
     summary: '[Admin] Listar variantes de un casco',
     description: 'Retorna todas las variantes (colores) del modelo con tallas e inventario.',
@@ -40,7 +51,7 @@ export class HelmetVariantsAdminController {
     return this.service.findAll(modelId, includeDeleted === 'true');
   }
 
-  @Get(':variantId')
+  @Get('admin/gear/helmets/:modelId/variants/:variantId')
   @ApiOperation({ summary: '[Admin] Obtener variante por ID' })
   @ApiParam({ name: 'modelId', description: 'UUID del modelo de casco' })
   @ApiParam({ name: 'variantId', description: 'UUID de la variante' })
@@ -53,7 +64,7 @@ export class HelmetVariantsAdminController {
     return this.service.findOne(modelId, variantId);
   }
 
-  @Post()
+  @Post('admin/gear/helmets/:modelId/variants')
   @ApiOperation({
     summary: '[Admin] Crear variante',
     description: 'Agrega un nuevo color/variante al modelo de casco.',
@@ -69,7 +80,7 @@ export class HelmetVariantsAdminController {
     return this.service.create(modelId, dto);
   }
 
-  @Put(':variantId')
+  @Put('admin/gear/helmets/:modelId/variants/:variantId')
   @ApiOperation({
     summary: '[Admin] Actualizar variante',
     description: 'Todos los campos son opcionales.',
@@ -87,7 +98,7 @@ export class HelmetVariantsAdminController {
     return this.service.update(modelId, variantId, dto);
   }
 
-  @Delete(':variantId')
+  @Delete('admin/gear/helmets/:modelId/variants/:variantId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: '[Admin] Eliminar variante (soft delete)',
@@ -104,7 +115,7 @@ export class HelmetVariantsAdminController {
     return this.service.remove(modelId, variantId);
   }
 
-  @Post(':variantId/restore')
+  @Post('admin/gear/helmets/:modelId/variants/:variantId/restore')
   @ApiOperation({ summary: '[Admin] Restaurar variante eliminada' })
   @ApiParam({ name: 'modelId', description: 'UUID del modelo de casco' })
   @ApiParam({ name: 'variantId', description: 'UUID de la variante' })

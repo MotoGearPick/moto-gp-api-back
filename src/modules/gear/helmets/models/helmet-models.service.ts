@@ -5,6 +5,7 @@ import { ProductsPrismaService } from '../../../../prisma/products-prisma.servic
 import { FilterHelmetModelsDto } from './dto/filter-helmet-models.dto';
 import { CreateHelmetModelDto } from './dto/create-helmet-model.dto';
 import { UpdateHelmetModelDto } from './dto/update-helmet-model.dto';
+import { FilterHelmetModelsAdminDto } from './dto/filter-helmet-models-admin.dto';
 
 @Injectable()
 export class HelmetModelsService {
@@ -139,7 +140,22 @@ export class HelmetModelsService {
     });
   }
 
-  // ─── Private helpers ──────────────────────────────────────────────────────
+  async findAllModelsAdmin(filters: FilterHelmetModelsAdminDto) {
+    const where = this.buildAdminModelsWhere(filters);
+
+    const result = await paginate({
+      model: this.db.helmet_model,
+      pagination: filters,
+      where,
+      orderBy: { name: 'asc' },
+      select: this.buildAdminModelSelect(),
+    });
+
+    return {
+      data: result.data.map((item) => this.mapModelAdminResponse(item)),
+      meta: result.meta,
+    };
+  }
 
   private buildWhere(
     filters: FilterHelmetModelsDto,
@@ -307,6 +323,157 @@ export class HelmetModelsService {
       })),
       priceFrom: prices.length ? Math.min(...prices) : null,
       inStock: allInventory.some((i: any) => i.in_stock),
+    };
+  }
+
+  private buildAdminModelsWhere(
+    filters: FilterHelmetModelsAdminDto,
+  ): Prisma.helmet_modelWhereInput {
+    const onlyDeleted = !!filters.onlyDeleted;
+    const includeDeleted = !!filters.includeDeleted;
+
+    const createdAtFilter: Prisma.DateTimeFilter | undefined =
+      filters.minCreatedAt !== undefined || filters.maxCreatedAt !== undefined
+        ? {
+            ...(filters.minCreatedAt !== undefined && { gte: new Date(filters.minCreatedAt) }),
+            ...(filters.maxCreatedAt !== undefined && { lte: new Date(filters.maxCreatedAt) }),
+          }
+        : undefined;
+
+    const updatedAtFilter: Prisma.DateTimeFilter | undefined =
+      filters.minUpdatedAt !== undefined || filters.maxUpdatedAt !== undefined
+        ? {
+            ...(filters.minUpdatedAt !== undefined && { gte: new Date(filters.minUpdatedAt) }),
+            ...(filters.maxUpdatedAt !== undefined && { lte: new Date(filters.maxUpdatedAt) }),
+          }
+        : undefined;
+
+    return {
+      ...(!includeDeleted && !onlyDeleted && { deleted_at: null }),
+      ...(onlyDeleted && { NOT: { deleted_at: null } }),
+      ...(filters.id && { id: filters.id }),
+      ...(filters.brandId && { brand_id: filters.brandId }),
+      ...(filters.brandSlug && { brand: { slug: filters.brandSlug } }),
+      ...(filters.name && { name: { contains: filters.name, mode: 'insensitive' } }),
+      ...(filters.slug && { slug: { contains: filters.slug, mode: 'insensitive' } }),
+      ...(filters.type?.length && { helmet_type: { hasSome: filters.type as any[] } }),
+      ...(filters.shellMaterial?.length && { shell_material: { hasSome: filters.shellMaterial as any[] } }),
+      ...(filters.closureType && { closure_type: filters.closureType as any }),
+      ...(filters.visorPinlockCompatible?.length && {
+        visor_pinlock_compatible: { hasSome: filters.visorPinlockCompatible as any[] },
+      }),
+      ...(filters.visorPinlockIncluded !== undefined && {
+        visor_pinlock_included: filters.visorPinlockIncluded,
+      }),
+      ...(filters.tearOffCompatible !== undefined && {
+        tear_off_compatible: filters.tearOffCompatible,
+      }),
+      ...(filters.sunVisor !== undefined && { sun_visor: filters.sunVisor }),
+      ...(filters.intercomReady !== undefined && { intercom_ready: filters.intercomReady }),
+      ...(filters.removableLining !== undefined && {
+        removable_lining: filters.removableLining,
+      }),
+      ...(filters.washableLining !== undefined && {
+        washable_lining: filters.washableLining,
+      }),
+      ...(filters.emergencyRelease !== undefined && {
+        emergency_release: filters.emergencyRelease,
+      }),
+      ...((filters.minSafetyRating !== undefined || filters.maxSafetyRating !== undefined) && {
+        safety_rating: {
+          ...(filters.minSafetyRating !== undefined && { gte: filters.minSafetyRating }),
+          ...(filters.maxSafetyRating !== undefined && { lte: filters.maxSafetyRating }),
+        },
+      }),
+      ...((filters.minWeightGrams !== undefined || filters.maxWeightGrams !== undefined) && {
+        weight_grams: {
+          ...(filters.minWeightGrams !== undefined && { gte: filters.minWeightGrams }),
+          ...(filters.maxWeightGrams !== undefined && { lte: filters.maxWeightGrams }),
+        },
+      }),
+      ...(filters.certification?.length && {
+        certification: { hasEvery: filters.certification as any[] },
+      }),
+      ...(createdAtFilter && { created_at: createdAtFilter }),
+      ...(updatedAtFilter && { updated_at: updatedAtFilter }),
+      ...(filters.missingWeightGrams && { weight_grams: null }),
+      ...(filters.missingSafetyRating && { safety_rating: null }),
+      ...(filters.missingSunVisorType && { sun_visor_type: null }),
+      ...(filters.missingIntercomDesignedBrand && { intercom_designed_brand: null }),
+      ...(filters.missingIntercomDesignedModel && { intercom_designed_model: null }),
+      ...(filters.missingPinlockDksCode && { pinlock_dks_code: null }),
+    };
+  }
+
+  private buildAdminModelSelect(): Prisma.helmet_modelSelect {
+    return {
+      id: true,
+      slug: true,
+      name: true,
+      brand_id: true,
+      brand: { select: { id: true, name: true, slug: true } },
+      helmet_type: true,
+      safety_rating: true,
+      shell_material: true,
+      shell_sizes: true,
+      weight_grams: true,
+      visor_anti_scratch: true,
+      visor_anti_fog: true,
+      visor_pinlock_compatible: true,
+      visor_pinlock_included: true,
+      pinlock_dks_code: true,
+      tear_off_compatible: true,
+      sun_visor: true,
+      sun_visor_type: true,
+      intercom_ready: true,
+      intercom_designed_brand: true,
+      intercom_designed_model: true,
+      removable_lining: true,
+      washable_lining: true,
+      emergency_release: true,
+      closure_type: true,
+      certification: true,
+      included_accessories: true,
+      created_at: true,
+      updated_at: true,
+      deleted_at: true,
+    };
+  }
+
+  private mapModelAdminResponse(raw: any) {
+    return {
+      id: raw.id,
+      slug: raw.slug,
+      name: raw.name,
+      brandId: raw.brand_id,
+      brand: raw.brand,
+      type: raw.helmet_type,
+      safetyRating: raw.safety_rating,
+      shellMaterial: raw.shell_material,
+      shellSizes: raw.shell_sizes,
+      weightGrams: raw.weight_grams,
+      features: {
+        visorAntiScratch: raw.visor_anti_scratch,
+        visorAntiFog: raw.visor_anti_fog,
+        visorPinlockCompatible: raw.visor_pinlock_compatible,
+        visorPinlockIncluded: raw.visor_pinlock_included,
+        pinlockDksCode: raw.pinlock_dks_code,
+        tearOffCompatible: raw.tear_off_compatible,
+        sunVisor: raw.sun_visor,
+        sunVisorType: raw.sun_visor_type,
+        intercomReady: raw.intercom_ready,
+        intercomDesignedBrand: raw.intercom_designed_brand,
+        intercomDesignedModel: raw.intercom_designed_model,
+        removableLining: raw.removable_lining,
+        washableLining: raw.washable_lining,
+        emergencyRelease: raw.emergency_release,
+        closureType: raw.closure_type,
+      },
+      certification: raw.certification,
+      includedAccessories: raw.included_accessories,
+      createdAt: raw.created_at,
+      updatedAt: raw.updated_at,
+      deletedAt: raw.deleted_at,
     };
   }
 }

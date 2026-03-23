@@ -14,8 +14,8 @@ import { HelmetInventoryAdminController } from './inventory/helmet-inventory.adm
   controllers: [
     HelmetVariantsController,      // Debe ir antes que HelmetModelsController para que
     HelmetModelsController,        // /gear/helmets/variants no sea capturado por /:id
-    HelmetModelsAdminController,
-    HelmetVariantsAdminController,
+    HelmetVariantsAdminController,   // Debe ir antes que HelmetModelsAdminController para que
+    HelmetModelsAdminController,     // /admin/gear/helmets/variants no sea capturado por /:id
     HelmetSizesAdminController,
     HelmetInventoryAdminController,
   ],
