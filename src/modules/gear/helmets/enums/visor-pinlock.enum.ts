@@ -9,6 +9,7 @@ export enum VisorPinlock {
   // Pinlock 120
   PINLOCK_120 = 'pinlock_120',
   PINLOCK_120_MAX_VISION = 'pinlock_120_max_vision',
+  PINLOCK_120_MAX_VISION_XLT = 'pinlock_120_max_vision_xlt',
 
   // Especiales
   PINLOCK_EVO = 'pinlock_evo',

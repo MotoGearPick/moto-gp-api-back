@@ -221,6 +221,7 @@ enum visor_pinlock {
   pinlock_70_max_vision
   pinlock_120
   pinlock_120_max_vision
+  pinlock_120_max_vision_xlt
   pinlock_evo
   pinlock_protectint
   pinlock_max_vision
