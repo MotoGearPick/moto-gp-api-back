@@ -1,9 +1,11 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/products-client';
 import { ProductsPrismaService } from '../../prisma/products-prisma.service';
 import { FilterReviewsDto } from './dto';
 import { UpdateReviewDto } from './dto';
@@ -302,10 +304,7 @@ export class ScraperReviewsService {
   }
 
   async editGroupModel(modelSlug: string, editedModelData: ScrapedModelDataDto) {
-    const allReviews = await this.prisma.scrape_review.findMany();
-    const groupReviews = allReviews.filter(
-      (r) => this.getModelSlug(r) === modelSlug,
-    );
+    const groupReviews = await this.findReviewsByModelSlug(modelSlug);
 
     if (groupReviews.length === 0) {
       throw new NotFoundException(`No reviews found for model slug: ${modelSlug}`);
@@ -348,10 +347,7 @@ export class ScraperReviewsService {
   }
 
   async batchApprove(modelSlug: string, dto: BatchApproveDto) {
-    const allReviews = await this.prisma.scrape_review.findMany();
-    const groupReviews = allReviews.filter(
-      (r) => this.getModelSlug(r) === modelSlug,
-    );
+    const groupReviews = await this.findReviewsByModelSlug(modelSlug);
 
     if (groupReviews.length === 0) {
       throw new NotFoundException(`No reviews found for model slug: ${modelSlug}`);
@@ -369,22 +365,118 @@ export class ScraperReviewsService {
 
     this.verifyModelDataConsistency(toApprove);
 
-    for (const r of toApprove) {
-      await this.persistToHelmetTables(r);
-      await this.prisma.scrape_review.update({
-        where: { id: r.id },
+    // Single transaction for the entire batch
+    try {
+      await this.prisma.$transaction(async (tx) => {
+      // All reviews share the same model — upsert brand and model once
+      const { modelData } = this.getResolvedData(toApprove[0]);
+      const brandSlug = modelData.brandSlug;
+      const brandName = brandSlug.charAt(0).toUpperCase() + brandSlug.slice(1);
+
+      const brand = await tx.brand.upsert({
+        where: { slug: brandSlug },
+        update: {},
+        create: { name: brandName, slug: brandSlug },
+      });
+
+      const model = await tx.helmet_model.upsert({
+        where: {
+          brand_id_slug: { brand_id: brand.id, slug: modelData.modelSlug },
+        },
+        update: {},
+        create: {
+          slug: modelData.modelSlug,
+          name: modelData.modelName,
+          brand_id: brand.id,
+          helmet_type: modelData.helmetType as any[],
+          shell_material: modelData.shellMaterial as any[],
+          shell_sizes: modelData.shellSizes ?? undefined,
+          weight_grams: modelData.weightGrams ?? undefined,
+          visor_pinlock_compatible: modelData.visorPinlockCompatible as any[],
+          visor_pinlock_included: modelData.visorPinlockIncluded,
+          pinlock_dks_code: modelData.pinlockDksCode,
+          visor_anti_scratch: modelData.visorAntiScratch,
+          visor_anti_fog: modelData.visorAntiFog,
+          sun_visor: modelData.sunVisor,
+          sun_visor_type: modelData.sunVisorType,
+          intercom_ready: modelData.intercomReady,
+          intercom_designed_brand: modelData.intercomDesignedBrand,
+          intercom_designed_model: modelData.intercomDesignedModel,
+          removable_lining: modelData.removableLining,
+          washable_lining: modelData.washableLining,
+          emergency_release: modelData.emergencyRelease,
+          closure_type: (modelData.closureType as any) ?? undefined,
+          certification: modelData.certification as any[],
+          tear_off_compatible: modelData.tearOffCompatible,
+          included_accessories: modelData.includedAccessories,
+        },
+      });
+
+      // Upsert all variants in parallel
+      await Promise.all(
+        toApprove.map((r) => {
+          const { variantData } = this.getResolvedData(r);
+          return tx.helmet_model_variant.upsert({
+            where: {
+              helmet_id_color_name: {
+                helmet_id: model.id,
+                color_name: variantData.colorName,
+              },
+            },
+            update: {
+              color_families: { set: variantData.colorFamilies as any[] },
+              finish: (variantData.finish as any) ?? undefined,
+              graphic_name: variantData.graphicName,
+              sku: variantData.sku,
+              image_url: { set: variantData.imageUrls },
+            },
+            create: {
+              helmet_id: model.id,
+              color_name: variantData.colorName,
+              color_families: variantData.colorFamilies as any[],
+              finish: (variantData.finish as any) ?? undefined,
+              graphic_name: variantData.graphicName,
+              sku: variantData.sku,
+              image_url: variantData.imageUrls,
+            },
+          });
+        }),
+      );
+
+      // Batch insert sizes — one query to find existing, then createMany for new
+      if (modelData.sizes.length > 0) {
+        const existingSizes = await tx.helmet_model_size.findMany({
+          where: { model_id: model.id },
+          select: { size_label: true },
+        });
+        const existingLabels = new Set(existingSizes.map((s) => s.size_label));
+        const newSizes = modelData.sizes.filter((s) => !existingLabels.has(s));
+        if (newSizes.length > 0) {
+          await tx.helmet_model_size.createMany({
+            data: newSizes.map((s) => ({ model_id: model.id, size_label: s })),
+          });
+        }
+      }
+
+      // Update all review statuses in one query
+      await tx.scrape_review.updateMany({
+        where: { id: { in: toApprove.map((r) => r.id) } },
         data: { status: 'approved', reviewed_at: new Date() },
       });
+
+      this.logger.log(
+        `Batch approved ${toApprove.length} variants for model="${modelData.modelName}"`,
+      );
+    });
+    } catch (err) {
+      this.handlePrismaError(err);
     }
 
     return { approved: toApprove.length };
   }
 
   async batchReject(modelSlug: string, dto: BatchRejectDto) {
-    const allReviews = await this.prisma.scrape_review.findMany();
-    const groupReviews = allReviews.filter(
-      (r) => this.getModelSlug(r) === modelSlug,
-    );
+    const groupReviews = await this.findReviewsByModelSlug(modelSlug);
 
     if (groupReviews.length === 0) {
       throw new NotFoundException(`No reviews found for model slug: ${modelSlug}`);
@@ -417,6 +509,22 @@ export class ScraperReviewsService {
   }
 
   /**
+   * Find reviews by modelSlug using DB-level JSON filtering instead of loading the entire table.
+   */
+  private async findReviewsByModelSlug(modelSlug: string) {
+    return this.prisma.scrape_review.findMany({
+      where: {
+        OR: [
+          { raw_model_data: { path: ['modelSlug'], equals: modelSlug } },
+          { edited_model_data: { path: ['modelSlug'], equals: modelSlug } },
+          { raw_data: { path: ['modelData', 'modelSlug'], equals: modelSlug } },
+          { raw_data: { path: ['modelSlug'], equals: modelSlug } },
+        ],
+      },
+    });
+  }
+
+  /**
    * Get the final model+variant data for a review, preferring edited over raw.
    */
   private getResolvedData(review: any): {
@@ -445,7 +553,8 @@ export class ScraperReviewsService {
     const brandSlug = modelData.brandSlug;
     const brandName = brandSlug.charAt(0).toUpperCase() + brandSlug.slice(1);
 
-    await this.prisma.$transaction(async (tx) => {
+    try {
+      await this.prisma.$transaction(async (tx) => {
       // 1. Upsert brand
       const brand = await tx.brand.upsert({
         where: { slug: brandSlug },
@@ -496,11 +605,11 @@ export class ScraperReviewsService {
           },
         },
         update: {
-          color_families: variantData.colorFamilies as any[],
+          color_families: { set: variantData.colorFamilies as any[] },
           finish: (variantData.finish as any) ?? undefined,
           graphic_name: variantData.graphicName,
           sku: variantData.sku,
-          image_url: variantData.imageUrls,
+          image_url: { set: variantData.imageUrls },
         },
         create: {
           helmet_id: model.id,
@@ -515,15 +624,16 @@ export class ScraperReviewsService {
 
       // 4. Insert sizes (skip duplicates)
       if (modelData.sizes.length > 0) {
-        for (const sizeLabel of modelData.sizes) {
-          const existing = await tx.helmet_model_size.findFirst({
-            where: { model_id: model.id, size_label: sizeLabel },
+        const existingSizes = await tx.helmet_model_size.findMany({
+          where: { model_id: model.id },
+          select: { size_label: true },
+        });
+        const existingLabels = new Set(existingSizes.map((s) => s.size_label));
+        const newSizes = modelData.sizes.filter((s) => !existingLabels.has(s));
+        if (newSizes.length > 0) {
+          await tx.helmet_model_size.createMany({
+            data: newSizes.map((s) => ({ model_id: model.id, size_label: s })),
           });
-          if (!existing) {
-            await tx.helmet_model_size.create({
-              data: { model_id: model.id, size_label: sizeLabel },
-            });
-          }
         }
       }
 
@@ -531,6 +641,34 @@ export class ScraperReviewsService {
         `Saved model="${modelData.modelName}" variant="${variantData.colorName}" with ${modelData.sizes.length} sizes`,
       );
     });
+    } catch (err) {
+      this.handlePrismaError(err);
+    }
+  }
+
+  private handlePrismaError(err: unknown): never {
+    if (err instanceof Prisma.PrismaClientValidationError) {
+      this.logger.error('PrismaClientValidationError', err.message);
+      const match = err.message.match(/Invalid value for argument `(\w+)`[^.]*\. Expected (\S+)/);
+      if (match) {
+        throw new BadRequestException(
+          `Invalid value for field \`${match[1]}\`: expected ${match[2]}. Check that all enum values are valid.`,
+        );
+      }
+      throw new BadRequestException('Invalid data: ' + err.message.split('\n')[0]);
+    }
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      this.logger.error(`PrismaClientKnownRequestError ${err.code}`, err.message);
+      if (err.code === 'P2002') {
+        throw new ConflictException(`Unique constraint violation: ${err.meta?.target}`);
+      }
+      if (err.code === 'P2025') {
+        throw new NotFoundException(err.meta?.cause as string ?? 'Record not found');
+      }
+      throw new BadRequestException(`Database error ${err.code}: ${err.message}`);
+    }
+    this.logger.error('Unexpected error in database operation', err);
+    throw err;
   }
 
   private verifyModelDataConsistency(reviews: any[]) {
@@ -547,6 +685,7 @@ export class ScraperReviewsService {
 
     const unique = new Set(modelDataSerialized);
     if (unique.size > 1) {
+      this.logger.warn(`Model data inconsistency detected across ${reviews.length} reviews`);
       throw new BadRequestException(
         'Model data is inconsistent across variants. Please set editedModelData for the group before approving.',
       );

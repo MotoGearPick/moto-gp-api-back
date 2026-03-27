@@ -170,7 +170,7 @@ enum color_family {
   multicolor
   bronze
   hi_vis
-  iridiscent
+  iridescent
 }
 
 enum helmet_certification {
