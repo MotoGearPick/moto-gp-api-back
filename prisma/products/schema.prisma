@@ -175,10 +175,12 @@ enum color_family {
 
 enum helmet_certification {
   dot
-  snell
-  ece_2206
   ece_2205
-  fim
+  ece_2206
+  snell_m2020
+  snell_m2025
+  fim_frhphe_01
+  fim_frhphe_02
 }
 
 enum helmet_closure_type {
