@@ -10,6 +10,7 @@ export class HelmetInventoryService {
   async create(dto: CreateHelmetInventoryDto) {
     return this.db.helmet_inventory.create({
       data: {
+        variant_id: dto.variantId,
         size_id: dto.sizeId,
         store_id: dto.storeId,
         price: dto.price,
@@ -30,6 +31,9 @@ export class HelmetInventoryService {
     return this.db.helmet_inventory.update({
       where: { id },
       data: {
+        ...(dto.variantId && { variant_id: dto.variantId }),
+        ...(dto.sizeId && { size_id: dto.sizeId }),
+        ...(dto.storeId && { store_id: dto.storeId }),
         ...(dto.price !== undefined && { price: dto.price }),
         ...(dto.currency && { currency: dto.currency }),
         ...(dto.inStock !== undefined && { in_stock: dto.inStock }),

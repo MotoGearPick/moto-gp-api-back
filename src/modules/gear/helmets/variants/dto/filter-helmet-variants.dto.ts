@@ -38,6 +38,14 @@ export class FilterHelmetVariantsDto extends PaginationDto {
   @IsEnum(ColorFamily)
   colorFamily?: ColorFamily;
 
+  @ApiPropertyOptional({
+    description: 'Si es true, solo retorna variantes con EXACTAMENTE ese color (no multicolor). Requiere colorFamily.',
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  mono?: boolean;
+
   @ApiPropertyOptional({ enum: HelmetFinish })
   @IsOptional()
   @IsEnum(HelmetFinish)
@@ -95,9 +103,17 @@ export class FilterHelmetVariantsDto extends PaginationDto {
 
   @ApiPropertyOptional({ enum: HelmetCertification, isArray: true })
   @IsOptional()
+  @IsArray()
   @IsEnum(HelmetCertification, { each: true })
   @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
   certification?: HelmetCertification[];
+
+  @ApiPropertyOptional({ minimum: 1, description: 'Número mínimo de tamaños de shell disponibles' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  minShellSizes?: number;
 
   @ApiPropertyOptional()
   @IsOptional()

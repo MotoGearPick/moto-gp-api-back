@@ -61,6 +61,12 @@ export class FilterHelmetModelsDto extends PaginationDto {
   certification?: HelmetCertification[];
 
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  minShellSizes?: number;
+
+  @IsOptional()
   @IsEnum(ColorFamily)
   colorFamily?: ColorFamily;
 

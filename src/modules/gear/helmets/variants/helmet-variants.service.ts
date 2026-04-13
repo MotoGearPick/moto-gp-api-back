@@ -27,23 +27,6 @@ export class HelmetVariantsService {
     };
   }
 
-  async findAllPublic(filters: FilterHelmetVariantsDto) {
-    const where = this.buildPublicWhere(filters);
-
-    const result = await paginate({
-      model: this.db.helmet_model_variant,
-      pagination: filters,
-      where,
-      orderBy: { color_name: 'asc' },
-      include: this.buildPublicInclude(),
-    });
-
-    return {
-      data: result.data.map((v) => this.mapPublicVariant(v)),
-      meta: result.meta,
-    };
-  }
-
   async findAll(modelId: string, includeDeleted = false) {
     await this.assertModelExists(modelId);
 
@@ -159,7 +142,13 @@ export class HelmetVariantsService {
       ...(!showDeleted && { deleted_at: null }),
 
       // Variant filters
-      ...(filters.colorFamily && { color_families: { has: filters.colorFamily as any } }),
+      ...(filters.colorFamily && {
+        color_families: filters.mono
+          ? // Modo mono: exactamente ese color (sin multicolor)
+            { equals: [filters.colorFamily as any] }
+          : // Modo normal: tiene ese color entre otros
+            { has: filters.colorFamily as any },
+      }),
       ...(filters.finish && { finish: filters.finish as any }),
 
       // Model filters
@@ -183,6 +172,7 @@ export class HelmetVariantsService {
         ...(filters.emergencyRelease !== undefined && { emergency_release: filters.emergencyRelease }),
         ...(filters.minSafetyRating && { safety_rating: { gte: filters.minSafetyRating } }),
         ...(filters.maxWeightGrams && { weight_grams: { lte: filters.maxWeightGrams } }),
+        ...(filters.minShellSizes && { shell_sizes: { gte: filters.minShellSizes } }),
       },
 
       // Inventory filters
@@ -229,6 +219,7 @@ export class HelmetVariantsService {
           affiliate_store: { select: { id: true, name: true, domain: true } },
         },
         orderBy: { price: 'asc' as const },
+        take: 10, // Limitar a top 10 tiendas por precio
       },
     };
   }
@@ -296,79 +287,6 @@ export class HelmetVariantsService {
     };
   }
 
-  private buildPublicInclude() {
-    return {
-      helmet_model: {
-        include: {
-          brand: { select: { id: true, name: true, slug: true } },
-          helmet_model_size: { select: { id: true, size_label: true } },
-        },
-      },
-      helmet_inventory: {
-        select: {
-          price: true,
-          currency: true,
-          in_stock: true,
-          helmet_size: { select: { id: true, size_label: true } },
-        },
-        orderBy: { price: 'asc' as const },
-      },
-    };
-  }
-
-  private mapPublicVariant(v: any) {
-    const inventory = v.helmet_inventory ?? [];
-    const prices = inventory.map((i: any) => Number(i.price)).filter(Boolean);
-    const m = v.helmet_model;
-
-    return {
-      id: v.id,
-      colorName: v.color_name,
-      colorFamilies: v.color_families,
-      finish: v.finish,
-      graphicName: v.graphic_name,
-      images: v.image_url,
-      model: {
-        id: m.id,
-        name: m.name,
-        slug: m.slug,
-        brand: m.brand,
-        type: m.helmet_type,
-        safetyRating: m.safety_rating,
-        shellMaterial: m.shell_material,
-        shellSizes: m.shell_sizes,
-        weightGrams: m.weight_grams,
-        features: {
-          visorAntiScratch: m.visor_anti_scratch,
-          visorAntiFog: m.visor_anti_fog,
-          visorPinlockCompatible: m.visor_pinlock_compatible,
-          visorPinlockIncluded: m.visor_pinlock_included,
-          pinlockDksCode: m.pinlock_dks_code,
-          tearOffCompatible: m.tear_off_compatible,
-          sunVisor: m.sun_visor,
-          sunVisorType: m.sun_visor_type,
-          intercomReady: m.intercom_ready,
-          intercomDesignedBrand: m.intercom_designed_brand,
-          intercomDesignedModel: m.intercom_designed_model,
-          removableLining: m.removable_lining,
-          washableLining: m.washable_lining,
-          emergencyRelease: m.emergency_release,
-          closureType: m.closure_type,
-        },
-        certification: m.certification,
-        includedAccessories: m.included_accessories,
-        sizes: m.helmet_model_size?.map((s: any) => ({ id: s.id, sizeLabel: s.size_label })),
-      },
-      inventory: inventory.map((i: any) => ({
-        size: i.helmet_size ? { id: i.helmet_size.id, sizeLabel: i.helmet_size.size_label } : null,
-        price: Number(i.price),
-        currency: i.currency,
-        inStock: i.in_stock,
-      })),
-      priceFrom: prices.length ? Math.min(...prices) : null,
-      inStock: inventory.some((i: any) => i.in_stock),
-    };
-  }
 
   private async assertModelExists(modelId: string) {
     const model = await this.db.helmet_model.findUnique({

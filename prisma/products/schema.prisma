@@ -42,15 +42,18 @@ model helmet_inventory {
   last_checked         DateTime              @default(now()) @db.Timestamptz(6)
   created_at           DateTime              @default(now()) @db.Timestamptz(6)
   updated_at           DateTime              @default(now()) @db.Timestamptz(6)
-  variant_id           String?               @db.Uuid
+  variant_id           String                @db.Uuid
   helmet_size          helmet_model_size     @relation(fields: [size_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   affiliate_store      affiliate_store       @relation(fields: [store_id], references: [id], onDelete: Cascade)
-  helmet_model_variant helmet_model_variant? @relation(fields: [variant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  helmet_model_variant helmet_model_variant  @relation(fields: [variant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@unique([size_id, store_id])
+  @@unique([variant_id, size_id, store_id])
   @@index([in_stock])
   @@index([size_id])
   @@index([store_id])
+  @@index([variant_id])
+  @@index([variant_id, in_stock])
+  @@index([in_stock, price])
 }
 
 model helmet_model {
@@ -89,6 +92,7 @@ model helmet_model {
 
   @@unique([brand_id, name])
   @@unique([brand_id, slug])
+  @@index([deleted_at, brand_id])
 }
 
 model helmet_size_chart_by_brand {
@@ -131,6 +135,9 @@ model helmet_model_size {
   updated_at       DateTime           @default(now()) @db.Timestamptz(6)
   helmet_inventory helmet_inventory[]
   helmet_model     helmet_model       @relation(fields: [model_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([model_id, size_label])
+  @@index([model_id])
 }
 
 model helmet_model_variant {
@@ -150,6 +157,8 @@ model helmet_model_variant {
 
   @@unique([helmet_id, color_name], map: "helmet_variant_helmet_id_color_name_key")
   @@index([helmet_id], map: "helmet_variant_helmet_id_idx")
+  @@index([deleted_at])
+  @@index([helmet_id, deleted_at])
 }
 
 enum color_family {

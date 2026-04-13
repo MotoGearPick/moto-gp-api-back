@@ -30,7 +30,7 @@ export class HelmetModelsService {
       pagination: filters,
       where,
       orderBy: { name: 'asc' },
-      include: this.buildInclude(adminView),
+      include: this.buildInclude(adminView, filters),
     });
 
     return {
@@ -163,41 +163,32 @@ export class HelmetModelsService {
   ): Prisma.helmet_modelWhereInput {
     const showDeleted = adminView && filters.includeDeleted;
     const hasVariantFilters = filters.colorFamily !== undefined;
-    const hasPriceFilter =
-      filters.minPrice !== undefined || filters.maxPrice !== undefined;
 
     return {
       // Soft delete: público nunca ve eliminados, admin solo si pide includeDeleted
       ...(!showDeleted && { deleted_at: null }),
 
       ...(filters.brandSlug && { brand: { slug: filters.brandSlug, deleted_at: null } }),
-      ...(filters.type?.length && { helmet_type: { hasSome: filters.type as any[] } }),
-      ...(filters.shellMaterial?.length && { shell_material: { hasSome: filters.shellMaterial as any[] } }),
-      ...(filters.closureType && { closure_type: filters.closureType as any }),
-      ...(filters.visorPinlockCompatible?.length && { visor_pinlock_compatible: { hasSome: filters.visorPinlockCompatible as any[] } }),
-      ...(filters.visorPinlockIncluded !== undefined && { visor_pinlock_included: filters.visorPinlockIncluded }),
-      ...(filters.tearOffCompatible !== undefined && { tear_off_compatible: filters.tearOffCompatible }),
-      ...(filters.sunVisor !== undefined && { sun_visor: filters.sunVisor }),
-      ...(filters.intercomReady !== undefined && { intercom_ready: filters.intercomReady }),
-      ...(filters.minSafetyRating && { safety_rating: { gte: filters.minSafetyRating } }),
-      ...(filters.maxWeightGrams && { weight_grams: { lte: filters.maxWeightGrams } }),
-      ...(filters.certification?.length && {
-        certification: { hasEvery: filters.certification as any[] },
-      }),
-      ...((hasVariantFilters || hasPriceFilter) && {
+       ...(filters.type?.length && { helmet_type: { hasSome: filters.type as any[] } }),
+       ...(filters.shellMaterial?.length && { shell_material: { hasSome: filters.shellMaterial as any[] } }),
+       ...(filters.closureType && { closure_type: filters.closureType as any }),
+       ...(filters.visorPinlockCompatible?.length && { visor_pinlock_compatible: { hasSome: filters.visorPinlockCompatible as any[] } }),
+       ...(filters.visorPinlockIncluded !== undefined && { visor_pinlock_included: filters.visorPinlockIncluded }),
+       ...(filters.tearOffCompatible !== undefined && { tear_off_compatible: filters.tearOffCompatible }),
+       ...(filters.sunVisor !== undefined && { sun_visor: filters.sunVisor }),
+       ...(filters.intercomReady !== undefined && { intercom_ready: filters.intercomReady }),
+       ...(filters.minSafetyRating && { safety_rating: { gte: filters.minSafetyRating } }),
+       ...(filters.maxWeightGrams && { weight_grams: { lte: filters.maxWeightGrams } }),
+       ...(filters.minShellSizes && { shell_sizes: { gte: filters.minShellSizes } }),
+       ...(filters.certification?.length && {
+         certification: { hasEvery: filters.certification as any[] },
+       }),
+      ...(hasVariantFilters && {
         helmet_model_variant: {
           some: {
             deleted_at: null,
             ...(filters.colorFamily && {
               color_families: { has: filters.colorFamily as any },
-            }),
-            ...(hasPriceFilter && {
-              helmet_inventory: {
-                some: {
-                  ...(filters.minPrice !== undefined && { price: { gte: filters.minPrice } }),
-                  ...(filters.maxPrice !== undefined && { price: { lte: filters.maxPrice } }),
-                },
-              },
             }),
           },
         },
@@ -205,11 +196,22 @@ export class HelmetModelsService {
     };
   }
 
-  private buildInclude(adminView: boolean): Prisma.helmet_modelInclude {
+  private buildInclude(
+    adminView: boolean,
+    filters?: FilterHelmetModelsDto,
+  ): Prisma.helmet_modelInclude {
+    const variantWhere = this.buildVariantWhereForResponse(filters, adminView);
+    const publicVariantTake = adminView
+      ? undefined
+      : this.hasVariantFilters(filters)
+        ? 1
+        : 5;
+
     return {
       brand: { select: { id: true, name: true, slug: true } },
       helmet_model_variant: {
-        where: adminView ? {} : { deleted_at: null },
+        where: variantWhere,
+        take: publicVariantTake,
         select: {
           id: true,
           color_name: true,
@@ -241,11 +243,18 @@ export class HelmetModelsService {
               },
             },
             orderBy: { price: 'asc' },
+            take: 5, // Limitar a top 5 precios
           },
         },
+        orderBy: { color_name: 'asc' }, // Orden consistente
       },
-      helmet_model_size: {
+      helmet_model_size: adminView ? {
         select: { id: true, size_label: true },
+      } : undefined, // En public no necesita tallas, solo en admin
+      _count: {
+        select: {
+          helmet_model_variant: adminView ? true : { where: variantWhere },
+        },
       },
     };
   }
@@ -280,7 +289,11 @@ export class HelmetModelsService {
       },
       certification: raw.certification,
       includedAccessories: raw.included_accessories,
-      sizes: raw.helmet_model_size?.map((s: any) => ({ id: s.id, sizeLabel: s.size_label })),
+      variantsCount: raw._count?.helmet_model_variant ?? 0,
+      sizes: (raw.helmet_model_size ?? []).map((s: any) => ({
+        id: s.id,
+        sizeLabel: s.size_label,
+      })),
       variants: raw.helmet_model_variant.map((v: any) => this.mapVariant(v, adminView)),
       ...(adminView && {
         createdAt: raw.created_at,
@@ -323,6 +336,27 @@ export class HelmetModelsService {
       })),
       priceFrom: prices.length ? Math.min(...prices) : null,
       inStock: allInventory.some((i: any) => i.in_stock),
+    };
+  }
+
+  private hasVariantFilters(filters?: FilterHelmetModelsDto): boolean {
+    if (!filters) return false;
+    return filters.colorFamily !== undefined;
+  }
+
+  private buildVariantWhereForResponse(
+    filters: FilterHelmetModelsDto | undefined,
+    adminView: boolean,
+  ): Prisma.helmet_model_variantWhereInput {
+    const hasVariantFilters = this.hasVariantFilters(filters);
+
+    return {
+      ...(adminView ? {} : { deleted_at: null }),
+      ...(hasVariantFilters && {
+        ...(filters?.colorFamily && {
+          color_families: { has: filters.colorFamily as any },
+        }),
+      }),
     };
   }
 

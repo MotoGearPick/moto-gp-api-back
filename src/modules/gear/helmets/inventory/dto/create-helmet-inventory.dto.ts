@@ -5,14 +5,18 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  IsUUID,
   Min,
 } from 'class-validator';
 
 export class CreateHelmetInventoryDto {
-  @IsString()
+  @IsUUID()
+  variantId: string;
+
+  @IsUUID()
   sizeId: string;
 
-  @IsString()
+  @IsUUID()
   storeId: string;
 
   @Type(() => Number)

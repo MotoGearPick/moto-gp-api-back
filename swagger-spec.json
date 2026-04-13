@@ -66,337 +66,6 @@
         ]
       }
     },
-    "/gear/helmets/variants": {
-      "get": {
-        "description": "Retorna todas las variantes activas con su modelo, tallas e inventario. Soporta filtros por modelo, características técnicas, color, precio, talla y búsqueda por nombre.",
-        "operationId": "HelmetVariantsController_findAll",
-        "parameters": [
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "description": "Busca en nombre del modelo, marca, color y gráfico",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "colorFamily",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "black",
-                "white",
-                "red",
-                "blue",
-                "green",
-                "yellow",
-                "orange",
-                "pink",
-                "purple",
-                "grey",
-                "silver",
-                "gold",
-                "brown",
-                "carbon",
-                "multicolor",
-                "bronze",
-                "hi_vis"
-              ]
-            }
-          },
-          {
-            "name": "finish",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "gloss",
-                "matte",
-                "satin"
-              ]
-            }
-          },
-          {
-            "name": "modelId",
-            "required": false,
-            "in": "query",
-            "description": "UUID del modelo de casco",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "brandSlug",
-            "required": false,
-            "in": "query",
-            "description": "Slug de la marca",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "type",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "full_face",
-                  "modular",
-                  "open_face",
-                  "half",
-                  "off_road"
-                ]
-              }
-            }
-          },
-          {
-            "name": "shellMaterial",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "polycarbonate",
-                  "fiberglass",
-                  "carbon_fiber"
-                ]
-              }
-            }
-          },
-          {
-            "name": "closureType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "double_d_ring",
-                "micrometric",
-                "quick_release",
-                "magnetic",
-                "pinch_buckle"
-              ]
-            }
-          },
-          {
-            "name": "visorPinlockCompatible",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "pinlock_30",
-                  "pinlock_70",
-                  "pinlock_70_max_vision",
-                  "pinlock_120",
-                  "pinlock_120_max_vision",
-                  "pinlock_evo",
-                  "pinlock_protectint",
-                  "pinlock_max_vision",
-                  "pinlock_ready",
-                  "not_compatible"
-                ]
-              }
-            }
-          },
-          {
-            "name": "visorPinlockIncluded",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "tearOffCompatible",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "certification",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "dot",
-                  "snell",
-                  "ece_2206",
-                  "ece_2205",
-                  "fim"
-                ]
-              }
-            }
-          },
-          {
-            "name": "sunVisor",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "intercomReady",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "visorAntiScratch",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "visorAntiFog",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "removableLining",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "washableLining",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "emergencyRelease",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "minSafetyRating",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 5,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxWeightGrams",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 0,
-              "type": "number"
-            }
-          },
-          {
-            "name": "minPrice",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 0,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxPrice",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 0,
-              "type": "number"
-            }
-          },
-          {
-            "name": "inStock",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "sizeLabel",
-            "required": false,
-            "in": "query",
-            "description": "Ej: XS, S, M, L, XL, XXL",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "includeDeleted",
-            "required": false,
-            "in": "query",
-            "description": "Incluir variantes y modelos con soft delete",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Lista paginada de variantes"
-          }
-        },
-        "summary": "Listar todos los cascos (variantes)",
-        "tags": [
-          "Helmets"
-        ]
-      }
-    },
     "/gear/helmets/brands": {
       "get": {
         "description": "Retorna solo las marcas que tienen al menos un modelo de casco activo.",
@@ -455,7 +124,8 @@
                 "enum": [
                   "polycarbonate",
                   "fiberglass",
-                  "carbon_fiber"
+                  "carbon_fiber",
+                  "aramid_fiber"
                 ]
               }
             }
@@ -489,6 +159,7 @@
                   "pinlock_70_max_vision",
                   "pinlock_120",
                   "pinlock_120_max_vision",
+                  "pinlock_120_max_vision_xlt",
                   "pinlock_evo",
                   "pinlock_protectint",
                   "pinlock_max_vision",
@@ -524,12 +195,23 @@
                 "type": "string",
                 "enum": [
                   "dot",
-                  "snell",
                   "ece_2206",
                   "ece_2205",
-                  "fim"
+                  "snell_m2020",
+                  "snell_m2025",
+                  "fim_frhphe_01",
+                  "fim_frhphe_02"
                 ]
               }
+            }
+          },
+          {
+            "name": "minShellSizes",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
             }
           },
           {
@@ -555,7 +237,8 @@
                 "carbon",
                 "multicolor",
                 "bronze",
-                "hi_vis"
+                "hi_vis",
+                "iridescent"
               ]
             }
           },
@@ -682,286 +365,10 @@
         ]
       }
     },
-    "/admin/gear/helmets": {
-      "get": {
-        "description": "Igual que el endpoint público pero incluye campos internos (SKU, deletedAt). Usa `includeDeleted=true` para ver eliminados.",
-        "operationId": "HelmetModelsAdminController_findAll",
-        "parameters": [
-          {
-            "name": "brandSlug",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "type",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "full_face",
-                  "modular",
-                  "open_face",
-                  "half",
-                  "off_road"
-                ]
-              }
-            }
-          },
-          {
-            "name": "shellMaterial",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "polycarbonate",
-                  "fiberglass",
-                  "carbon_fiber"
-                ]
-              }
-            }
-          },
-          {
-            "name": "closureType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "double_d_ring",
-                "micrometric",
-                "quick_release",
-                "magnetic",
-                "pinch_buckle"
-              ]
-            }
-          },
-          {
-            "name": "visorPinlockCompatible",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "pinlock_30",
-                  "pinlock_70",
-                  "pinlock_70_max_vision",
-                  "pinlock_120",
-                  "pinlock_120_max_vision",
-                  "pinlock_evo",
-                  "pinlock_protectint",
-                  "pinlock_max_vision",
-                  "pinlock_ready",
-                  "not_compatible"
-                ]
-              }
-            }
-          },
-          {
-            "name": "visorPinlockIncluded",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "tearOffCompatible",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "certification",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "dot",
-                  "snell",
-                  "ece_2206",
-                  "ece_2205",
-                  "fim"
-                ]
-              }
-            }
-          },
-          {
-            "name": "colorFamily",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "black",
-                "white",
-                "red",
-                "blue",
-                "green",
-                "yellow",
-                "orange",
-                "pink",
-                "purple",
-                "grey",
-                "silver",
-                "gold",
-                "brown",
-                "carbon",
-                "multicolor",
-                "bronze",
-                "hi_vis"
-              ]
-            }
-          },
-          {
-            "name": "sunVisor",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "intercomReady",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "minSafetyRating",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 5,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxWeightGrams",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 0,
-              "type": "number"
-            }
-          },
-          {
-            "name": "minPrice",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 0,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxPrice",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 0,
-              "type": "number"
-            }
-          },
-          {
-            "name": "includeDeleted",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Lista paginada de cascos (vista admin)"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "[Admin] Listar cascos",
-        "tags": [
-          "Admin — Helmets"
-        ]
-      },
-      "post": {
-        "operationId": "HelmetModelsAdminController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateHelmetModelDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Casco creado correctamente"
-          },
-          "400": {
-            "description": "Datos inválidos"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "[Admin] Crear modelo de casco",
-        "tags": [
-          "Admin — Helmets"
-        ]
-      }
-    },
     "/admin/gear/helmets/variants": {
       "get": {
-        "description": "Lista plana de todas las variantes con su modelo. Usa `includeDeleted=true` para ver eliminadas.",
-        "operationId": "HelmetModelsAdminController_findAllVariants",
+        "description": "Lista global paginada de variantes con filtros avanzados (incluye datos del modelo).",
+        "operationId": "HelmetVariantsAdminController_findAllGlobal",
         "parameters": [
           {
             "name": "search",
@@ -995,8 +402,18 @@
                 "carbon",
                 "multicolor",
                 "bronze",
-                "hi_vis"
+                "hi_vis",
+                "iridescent"
               ]
+            }
+          },
+          {
+            "name": "mono",
+            "required": false,
+            "in": "query",
+            "description": "Si es true, solo retorna variantes con EXACTAMENTE ese color (no multicolor). Requiere colorFamily.",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -1060,7 +477,8 @@
                 "enum": [
                   "polycarbonate",
                   "fiberglass",
-                  "carbon_fiber"
+                  "carbon_fiber",
+                  "aramid_fiber"
                 ]
               }
             }
@@ -1094,6 +512,7 @@
                   "pinlock_70_max_vision",
                   "pinlock_120",
                   "pinlock_120_max_vision",
+                  "pinlock_120_max_vision_xlt",
                   "pinlock_evo",
                   "pinlock_protectint",
                   "pinlock_max_vision",
@@ -1129,12 +548,24 @@
                 "type": "string",
                 "enum": [
                   "dot",
-                  "snell",
                   "ece_2206",
                   "ece_2205",
-                  "fim"
+                  "snell_m2020",
+                  "snell_m2025",
+                  "fim_frhphe_01",
+                  "fim_frhphe_02"
                 ]
               }
+            }
+          },
+          {
+            "name": "minShellSizes",
+            "required": false,
+            "in": "query",
+            "description": "Número mínimo de tamaños de shell disponibles",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
             }
           },
           {
@@ -1290,149 +721,7 @@
         ],
         "summary": "[Admin] Listar todas las variantes",
         "tags": [
-          "Admin — Helmets"
-        ]
-      }
-    },
-    "/admin/gear/helmets/{id}": {
-      "get": {
-        "description": "Incluye todos los campos internos y variantes eliminadas.",
-        "operationId": "HelmetModelsAdminController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "UUID del modelo de casco",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Detalle completo del casco (vista admin)"
-          },
-          "404": {
-            "description": "Casco no encontrado"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "[Admin] Obtener casco por ID",
-        "tags": [
-          "Admin — Helmets"
-        ]
-      },
-      "put": {
-        "description": "Todos los campos son opcionales (actualización parcial).",
-        "operationId": "HelmetModelsAdminController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "UUID del modelo de casco",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateHelmetModelDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Casco actualizado"
-          },
-          "404": {
-            "description": "Casco no encontrado"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "[Admin] Actualizar modelo de casco",
-        "tags": [
-          "Admin — Helmets"
-        ]
-      },
-      "delete": {
-        "description": "Marca el casco como eliminado sin borrarlo de la base de datos. Restaurable con /restore.",
-        "operationId": "HelmetModelsAdminController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "UUID del modelo de casco",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Casco eliminado (soft delete)"
-          },
-          "404": {
-            "description": "Casco no encontrado"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "[Admin] Eliminar casco (soft delete)",
-        "tags": [
-          "Admin — Helmets"
-        ]
-      }
-    },
-    "/admin/gear/helmets/{id}/restore": {
-      "post": {
-        "description": "Revierte el soft delete, el casco vuelve al estado activo.",
-        "operationId": "HelmetModelsAdminController_restore",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "UUID del modelo de casco",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Casco restaurado"
-          },
-          "404": {
-            "description": "Casco no encontrado"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "[Admin] Restaurar casco eliminado",
-        "tags": [
-          "Admin — Helmets"
+          "Admin — Helmet Variants"
         ]
       }
     },
@@ -1697,6 +986,552 @@
         ]
       }
     },
+    "/admin/gear/helmets": {
+      "get": {
+        "description": "Listado plano de HelmetModel con filtros administrativos avanzados (sin relaciones de variantes).",
+        "operationId": "HelmetModelsAdminController_findAll",
+        "parameters": [
+          {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "brandId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "brandSlug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "full_face",
+                  "modular",
+                  "open_face",
+                  "half",
+                  "off_road"
+                ]
+              }
+            }
+          },
+          {
+            "name": "shellMaterial",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "polycarbonate",
+                  "fiberglass",
+                  "carbon_fiber",
+                  "aramid_fiber"
+                ]
+              }
+            }
+          },
+          {
+            "name": "closureType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "double_d_ring",
+                "micrometric",
+                "quick_release",
+                "magnetic",
+                "pinch_buckle"
+              ]
+            }
+          },
+          {
+            "name": "visorPinlockCompatible",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "pinlock_30",
+                  "pinlock_70",
+                  "pinlock_70_max_vision",
+                  "pinlock_120",
+                  "pinlock_120_max_vision",
+                  "pinlock_120_max_vision_xlt",
+                  "pinlock_evo",
+                  "pinlock_protectint",
+                  "pinlock_max_vision",
+                  "pinlock_ready",
+                  "not_compatible"
+                ]
+              }
+            }
+          },
+          {
+            "name": "visorPinlockIncluded",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "tearOffCompatible",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "sunVisor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "intercomReady",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "removableLining",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "washableLining",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "emergencyRelease",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "minSafetyRating",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxSafetyRating",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "number"
+            }
+          },
+          {
+            "name": "minWeightGrams",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxWeightGrams",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "certification",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "dot",
+                  "ece_2206",
+                  "ece_2205",
+                  "snell_m2020",
+                  "snell_m2025",
+                  "fim_frhphe_01",
+                  "fim_frhphe_02"
+                ]
+              }
+            }
+          },
+          {
+            "name": "minCreatedAt",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxCreatedAt",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "minUpdatedAt",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxUpdatedAt",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "includeDeleted",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "onlyDeleted",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "missingWeightGrams",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "missingSafetyRating",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "missingSunVisorType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "missingIntercomDesignedBrand",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "missingIntercomDesignedModel",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "missingPinlockDksCode",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada de modelos (vista admin, sin variantes)"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Listar modelos de casco",
+        "tags": [
+          "Admin — Helmets"
+        ]
+      },
+      "post": {
+        "operationId": "HelmetModelsAdminController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHelmetModelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Casco creado correctamente"
+          },
+          "400": {
+            "description": "Datos inválidos"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Crear modelo de casco",
+        "tags": [
+          "Admin — Helmets"
+        ]
+      }
+    },
+    "/admin/gear/helmets/{id}": {
+      "get": {
+        "description": "Incluye todos los campos internos y variantes eliminadas.",
+        "operationId": "HelmetModelsAdminController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle completo del casco (vista admin)"
+          },
+          "404": {
+            "description": "Casco no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Obtener casco por ID",
+        "tags": [
+          "Admin — Helmets"
+        ]
+      },
+      "put": {
+        "description": "Todos los campos son opcionales (actualización parcial).",
+        "operationId": "HelmetModelsAdminController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHelmetModelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Casco actualizado"
+          },
+          "404": {
+            "description": "Casco no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Actualizar modelo de casco",
+        "tags": [
+          "Admin — Helmets"
+        ]
+      },
+      "delete": {
+        "description": "Marca el casco como eliminado sin borrarlo de la base de datos. Restaurable con /restore.",
+        "operationId": "HelmetModelsAdminController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Casco eliminado (soft delete)"
+          },
+          "404": {
+            "description": "Casco no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Eliminar casco (soft delete)",
+        "tags": [
+          "Admin — Helmets"
+        ]
+      }
+    },
+    "/admin/gear/helmets/{id}/restore": {
+      "post": {
+        "description": "Revierte el soft delete, el casco vuelve al estado activo.",
+        "operationId": "HelmetModelsAdminController_restore",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID del modelo de casco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Casco restaurado"
+          },
+          "404": {
+            "description": "Casco no encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Admin] Restaurar casco eliminado",
+        "tags": [
+          "Admin — Helmets"
+        ]
+      }
+    },
     "/admin/gear/helmets/{modelId}/sizes": {
       "post": {
         "operationId": "HelmetSizesAdminController_create",
@@ -1838,7 +1673,7 @@
     },
     "/admin/gear/helmets/inventory": {
       "post": {
-        "description": "Crea un registro de precio y stock para una talla específica en una tienda afiliada. La combinación sizeId + storeId debe ser única.",
+        "description": "Crea un registro de precio y stock para una variante/talla específica en una tienda afiliada. La combinación variantId + sizeId + storeId debe ser única.",
         "operationId": "HelmetInventoryAdminController_create",
         "parameters": [],
         "requestBody": {
@@ -1856,7 +1691,7 @@
             "description": "Inventario creado"
           },
           "400": {
-            "description": "Combinación talla+tienda ya existe o datos inválidos"
+            "description": "Combinación variante+talla+tienda ya existe o datos inválidos"
           }
         },
         "security": [
@@ -2123,6 +1958,312 @@
           "Admin — Backup"
         ]
       }
+    },
+    "/scraper/reviews/grouped": {
+      "get": {
+        "operationId": "ScraperReviewsController_findGrouped",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Object"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get reviews grouped by model slug",
+        "tags": [
+          "Scraper Reviews"
+        ]
+      }
+    },
+    "/scraper/reviews/group/{modelSlug}/model": {
+      "patch": {
+        "operationId": "ScraperReviewsController_editGroupModel",
+        "parameters": [
+          {
+            "name": "modelSlug",
+            "required": true,
+            "in": "path",
+            "description": "Model slug (e.g. \"pista-gp-rr\")",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditGroupModelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Edit model data for all reviews in a model group",
+        "tags": [
+          "Scraper Reviews"
+        ]
+      }
+    },
+    "/scraper/reviews/group/{modelSlug}/approve": {
+      "post": {
+        "operationId": "ScraperReviewsController_batchApprove",
+        "parameters": [
+          {
+            "name": "modelSlug",
+            "required": true,
+            "in": "path",
+            "description": "Model slug",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchApproveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Batch approve reviews in a model group",
+        "tags": [
+          "Scraper Reviews"
+        ]
+      }
+    },
+    "/scraper/reviews/group/{modelSlug}/reject": {
+      "post": {
+        "operationId": "ScraperReviewsController_batchReject",
+        "parameters": [
+          {
+            "name": "modelSlug",
+            "required": true,
+            "in": "path",
+            "description": "Model slug",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchRejectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Batch reject reviews in a model group",
+        "tags": [
+          "Scraper Reviews"
+        ]
+      }
+    },
+    "/scraper/reviews/{id}": {
+      "get": {
+        "operationId": "ScraperReviewsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Review UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a single review by ID",
+        "tags": [
+          "Scraper Reviews"
+        ]
+      },
+      "patch": {
+        "operationId": "ScraperReviewsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Review UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Edit a single review (model and/or variant data)",
+        "tags": [
+          "Scraper Reviews"
+        ]
+      }
+    },
+    "/scraper/reviews/{id}/approve": {
+      "post": {
+        "operationId": "ScraperReviewsController_approveSingle",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Review UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Approve a single review",
+        "tags": [
+          "Scraper Reviews"
+        ]
+      }
+    },
+    "/scraper/reviews/{id}/reject": {
+      "post": {
+        "operationId": "ScraperReviewsController_rejectSingle",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Review UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reject a single review",
+        "tags": [
+          "Scraper Reviews"
+        ]
+      }
     }
   },
   "info": {
@@ -2160,284 +2301,6 @@
           "slug"
         ]
       },
-      "CreateHelmetModelDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "brandId": {
-            "type": "string"
-          },
-          "helmetType": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "full_face",
-                "modular",
-                "open_face",
-                "half",
-                "off_road"
-              ]
-            }
-          },
-          "safetyRating": {
-            "type": "number",
-            "minimum": 1
-          },
-          "shellMaterial": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "polycarbonate",
-                "fiberglass",
-                "carbon_fiber"
-              ]
-            }
-          },
-          "shellSizes": {
-            "type": "number",
-            "minimum": 1
-          },
-          "weightGrams": {
-            "type": "number",
-            "minimum": 0
-          },
-          "visorAntiScratch": {
-            "type": "boolean"
-          },
-          "visorAntiFog": {
-            "type": "boolean"
-          },
-          "visorPinlockCompatible": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "pinlock_30",
-                "pinlock_70",
-                "pinlock_70_max_vision",
-                "pinlock_120",
-                "pinlock_120_max_vision",
-                "pinlock_evo",
-                "pinlock_protectint",
-                "pinlock_max_vision",
-                "pinlock_ready",
-                "not_compatible"
-              ]
-            }
-          },
-          "visorPinlockIncluded": {
-            "type": "boolean"
-          },
-          "pinlockDksCode": {
-            "type": "string"
-          },
-          "tearOffCompatible": {
-            "type": "boolean"
-          },
-          "sunVisor": {
-            "type": "boolean"
-          },
-          "sunVisorType": {
-            "type": "string"
-          },
-          "intercomReady": {
-            "type": "boolean"
-          },
-          "intercomDesignedBrand": {
-            "type": "string"
-          },
-          "intercomDesignedModel": {
-            "type": "string"
-          },
-          "removableLining": {
-            "type": "boolean"
-          },
-          "washableLining": {
-            "type": "boolean"
-          },
-          "emergencyRelease": {
-            "type": "boolean"
-          },
-          "closureType": {
-            "type": "string",
-            "enum": [
-              "double_d_ring",
-              "micrometric",
-              "quick_release",
-              "magnetic",
-              "pinch_buckle"
-            ]
-          },
-          "certification": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "dot",
-                "snell",
-                "ece_2206",
-                "ece_2205",
-                "fim"
-              ]
-            }
-          },
-          "includedAccessories": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "name",
-          "slug",
-          "brandId",
-          "helmetType"
-        ]
-      },
-      "UpdateHelmetModelDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "brandId": {
-            "type": "string"
-          },
-          "helmetType": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "full_face",
-                "modular",
-                "open_face",
-                "half",
-                "off_road"
-              ]
-            }
-          },
-          "safetyRating": {
-            "type": "number",
-            "minimum": 1
-          },
-          "shellMaterial": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "polycarbonate",
-                "fiberglass",
-                "carbon_fiber"
-              ]
-            }
-          },
-          "shellSizes": {
-            "type": "number",
-            "minimum": 1
-          },
-          "weightGrams": {
-            "type": "number",
-            "minimum": 0
-          },
-          "visorAntiScratch": {
-            "type": "boolean"
-          },
-          "visorAntiFog": {
-            "type": "boolean"
-          },
-          "visorPinlockCompatible": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "pinlock_30",
-                "pinlock_70",
-                "pinlock_70_max_vision",
-                "pinlock_120",
-                "pinlock_120_max_vision",
-                "pinlock_evo",
-                "pinlock_protectint",
-                "pinlock_max_vision",
-                "pinlock_ready",
-                "not_compatible"
-              ]
-            }
-          },
-          "visorPinlockIncluded": {
-            "type": "boolean"
-          },
-          "pinlockDksCode": {
-            "type": "string"
-          },
-          "tearOffCompatible": {
-            "type": "boolean"
-          },
-          "sunVisor": {
-            "type": "boolean"
-          },
-          "sunVisorType": {
-            "type": "string"
-          },
-          "intercomReady": {
-            "type": "boolean"
-          },
-          "intercomDesignedBrand": {
-            "type": "string"
-          },
-          "intercomDesignedModel": {
-            "type": "string"
-          },
-          "removableLining": {
-            "type": "boolean"
-          },
-          "washableLining": {
-            "type": "boolean"
-          },
-          "emergencyRelease": {
-            "type": "boolean"
-          },
-          "closureType": {
-            "type": "string",
-            "enum": [
-              "double_d_ring",
-              "micrometric",
-              "quick_release",
-              "magnetic",
-              "pinch_buckle"
-            ]
-          },
-          "certification": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "dot",
-                "snell",
-                "ece_2206",
-                "ece_2205",
-                "fim"
-              ]
-            }
-          },
-          "includedAccessories": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
       "CreateHelmetVariantDto": {
         "type": "object",
         "properties": {
@@ -2465,7 +2328,8 @@
                 "carbon",
                 "multicolor",
                 "bronze",
-                "hi_vis"
+                "hi_vis",
+                "iridescent"
               ]
             }
           },
@@ -2522,7 +2386,8 @@
                 "carbon",
                 "multicolor",
                 "bronze",
-                "hi_vis"
+                "hi_vis",
+                "iridescent"
               ]
             }
           },
@@ -2541,6 +2406,292 @@
             "type": "string"
           },
           "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CreateHelmetModelDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "brandId": {
+            "type": "string"
+          },
+          "helmetType": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "full_face",
+                "modular",
+                "open_face",
+                "half",
+                "off_road"
+              ]
+            }
+          },
+          "safetyRating": {
+            "type": "number",
+            "minimum": 1
+          },
+          "shellMaterial": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "polycarbonate",
+                "fiberglass",
+                "carbon_fiber",
+                "aramid_fiber"
+              ]
+            }
+          },
+          "shellSizes": {
+            "type": "number",
+            "minimum": 1
+          },
+          "weightGrams": {
+            "type": "number",
+            "minimum": 0
+          },
+          "visorAntiScratch": {
+            "type": "boolean"
+          },
+          "visorAntiFog": {
+            "type": "boolean"
+          },
+          "visorPinlockCompatible": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "pinlock_30",
+                "pinlock_70",
+                "pinlock_70_max_vision",
+                "pinlock_120",
+                "pinlock_120_max_vision",
+                "pinlock_120_max_vision_xlt",
+                "pinlock_evo",
+                "pinlock_protectint",
+                "pinlock_max_vision",
+                "pinlock_ready",
+                "not_compatible"
+              ]
+            }
+          },
+          "visorPinlockIncluded": {
+            "type": "boolean"
+          },
+          "pinlockDksCode": {
+            "type": "string"
+          },
+          "tearOffCompatible": {
+            "type": "boolean"
+          },
+          "sunVisor": {
+            "type": "boolean"
+          },
+          "sunVisorType": {
+            "type": "string"
+          },
+          "intercomReady": {
+            "type": "boolean"
+          },
+          "intercomDesignedBrand": {
+            "type": "string"
+          },
+          "intercomDesignedModel": {
+            "type": "string"
+          },
+          "removableLining": {
+            "type": "boolean"
+          },
+          "washableLining": {
+            "type": "boolean"
+          },
+          "emergencyRelease": {
+            "type": "boolean"
+          },
+          "closureType": {
+            "type": "string",
+            "enum": [
+              "double_d_ring",
+              "micrometric",
+              "quick_release",
+              "magnetic",
+              "pinch_buckle"
+            ]
+          },
+          "certification": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "dot",
+                "ece_2206",
+                "ece_2205",
+                "snell_m2020",
+                "snell_m2025",
+                "fim_frhphe_01",
+                "fim_frhphe_02"
+              ]
+            }
+          },
+          "includedAccessories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "slug",
+          "brandId",
+          "helmetType"
+        ]
+      },
+      "UpdateHelmetModelDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "brandId": {
+            "type": "string"
+          },
+          "helmetType": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "full_face",
+                "modular",
+                "open_face",
+                "half",
+                "off_road"
+              ]
+            }
+          },
+          "safetyRating": {
+            "type": "number",
+            "minimum": 1
+          },
+          "shellMaterial": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "polycarbonate",
+                "fiberglass",
+                "carbon_fiber",
+                "aramid_fiber"
+              ]
+            }
+          },
+          "shellSizes": {
+            "type": "number",
+            "minimum": 1
+          },
+          "weightGrams": {
+            "type": "number",
+            "minimum": 0
+          },
+          "visorAntiScratch": {
+            "type": "boolean"
+          },
+          "visorAntiFog": {
+            "type": "boolean"
+          },
+          "visorPinlockCompatible": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "pinlock_30",
+                "pinlock_70",
+                "pinlock_70_max_vision",
+                "pinlock_120",
+                "pinlock_120_max_vision",
+                "pinlock_120_max_vision_xlt",
+                "pinlock_evo",
+                "pinlock_protectint",
+                "pinlock_max_vision",
+                "pinlock_ready",
+                "not_compatible"
+              ]
+            }
+          },
+          "visorPinlockIncluded": {
+            "type": "boolean"
+          },
+          "pinlockDksCode": {
+            "type": "string"
+          },
+          "tearOffCompatible": {
+            "type": "boolean"
+          },
+          "sunVisor": {
+            "type": "boolean"
+          },
+          "sunVisorType": {
+            "type": "string"
+          },
+          "intercomReady": {
+            "type": "boolean"
+          },
+          "intercomDesignedBrand": {
+            "type": "string"
+          },
+          "intercomDesignedModel": {
+            "type": "string"
+          },
+          "removableLining": {
+            "type": "boolean"
+          },
+          "washableLining": {
+            "type": "boolean"
+          },
+          "emergencyRelease": {
+            "type": "boolean"
+          },
+          "closureType": {
+            "type": "string",
+            "enum": [
+              "double_d_ring",
+              "micrometric",
+              "quick_release",
+              "magnetic",
+              "pinch_buckle"
+            ]
+          },
+          "certification": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "dot",
+                "ece_2206",
+                "ece_2205",
+                "snell_m2020",
+                "snell_m2025",
+                "fim_frhphe_01",
+                "fim_frhphe_02"
+              ]
+            }
+          },
+          "includedAccessories": {
             "type": "array",
             "items": {
               "type": "string"
@@ -2575,11 +2726,17 @@
       "CreateHelmetInventoryDto": {
         "type": "object",
         "properties": {
+          "variantId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "sizeId": {
-            "type": "string"
+            "type": "string",
+            "format": "uuid"
           },
           "storeId": {
-            "type": "string"
+            "type": "string",
+            "format": "uuid"
           },
           "price": {
             "type": "number",
@@ -2598,6 +2755,7 @@
           }
         },
         "required": [
+          "variantId",
           "sizeId",
           "storeId",
           "price",
@@ -2608,11 +2766,17 @@
       "UpdateHelmetInventoryDto": {
         "type": "object",
         "properties": {
+          "variantId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "sizeId": {
-            "type": "string"
+            "type": "string",
+            "format": "uuid"
           },
           "storeId": {
-            "type": "string"
+            "type": "string",
+            "format": "uuid"
           },
           "price": {
             "type": "number",
@@ -2673,6 +2837,314 @@
           "email",
           "password"
         ]
+      },
+      "Object": {
+        "type": "object",
+        "properties": {}
+      },
+      "ScrapedModelDataDto": {
+        "type": "object",
+        "properties": {
+          "modelName": {
+            "type": "string"
+          },
+          "modelSlug": {
+            "type": "string"
+          },
+          "brandSlug": {
+            "type": "string"
+          },
+          "helmetType": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "full_face",
+                "modular",
+                "open_face",
+                "half",
+                "off_road"
+              ]
+            }
+          },
+          "safetyRating": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1
+          },
+          "shellMaterial": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "polycarbonate",
+                "fiberglass",
+                "carbon_fiber",
+                "aramid_fiber"
+              ]
+            }
+          },
+          "shellSizes": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1
+          },
+          "weightGrams": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0
+          },
+          "visorAntiScratch": {
+            "type": "boolean"
+          },
+          "visorAntiFog": {
+            "type": "boolean"
+          },
+          "visorPinlockCompatible": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "pinlock_30",
+                "pinlock_70",
+                "pinlock_70_max_vision",
+                "pinlock_120",
+                "pinlock_120_max_vision",
+                "pinlock_120_max_vision_xlt",
+                "pinlock_evo",
+                "pinlock_protectint",
+                "pinlock_max_vision",
+                "pinlock_ready",
+                "not_compatible"
+              ]
+            }
+          },
+          "visorPinlockIncluded": {
+            "type": "boolean"
+          },
+          "pinlockDksCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "tearOffCompatible": {
+            "type": "boolean"
+          },
+          "sunVisor": {
+            "type": "boolean"
+          },
+          "sunVisorType": {
+            "type": "string",
+            "nullable": true
+          },
+          "intercomReady": {
+            "type": "boolean"
+          },
+          "intercomDesignedBrand": {
+            "type": "string",
+            "nullable": true
+          },
+          "intercomDesignedModel": {
+            "type": "string",
+            "nullable": true
+          },
+          "removableLining": {
+            "type": "boolean"
+          },
+          "washableLining": {
+            "type": "boolean"
+          },
+          "emergencyRelease": {
+            "type": "boolean"
+          },
+          "closureType": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "double_d_ring",
+              "micrometric",
+              "quick_release",
+              "magnetic",
+              "pinch_buckle"
+            ]
+          },
+          "certification": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "dot",
+                "ece_2206",
+                "ece_2205",
+                "snell_m2020",
+                "snell_m2025",
+                "fim_frhphe_01",
+                "fim_frhphe_02"
+              ]
+            }
+          },
+          "includedAccessories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "modelName",
+          "modelSlug",
+          "brandSlug",
+          "helmetType",
+          "shellMaterial",
+          "visorAntiScratch",
+          "visorAntiFog",
+          "visorPinlockCompatible",
+          "visorPinlockIncluded",
+          "tearOffCompatible",
+          "sunVisor",
+          "intercomReady",
+          "removableLining",
+          "washableLining",
+          "emergencyRelease",
+          "certification",
+          "includedAccessories",
+          "sizes"
+        ]
+      },
+      "EditGroupModelDto": {
+        "type": "object",
+        "properties": {
+          "editedModelData": {
+            "$ref": "#/components/schemas/ScrapedModelDataDto"
+          }
+        },
+        "required": [
+          "editedModelData"
+        ]
+      },
+      "BatchApproveDto": {
+        "type": "object",
+        "properties": {
+          "reviewIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "BatchRejectDto": {
+        "type": "object",
+        "properties": {
+          "reviewIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ScrapedVariantDataDto": {
+        "type": "object",
+        "properties": {
+          "variantName": {
+            "type": "string"
+          },
+          "colorName": {
+            "type": "string"
+          },
+          "colorFamilies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "black",
+                "white",
+                "red",
+                "blue",
+                "green",
+                "yellow",
+                "orange",
+                "pink",
+                "purple",
+                "grey",
+                "silver",
+                "gold",
+                "brown",
+                "carbon",
+                "multicolor",
+                "bronze",
+                "hi_vis",
+                "iridescent"
+              ]
+            }
+          },
+          "finish": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "gloss",
+              "matte",
+              "satin"
+            ]
+          },
+          "graphicName": {
+            "type": "string",
+            "nullable": true
+          },
+          "sku": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "variantName",
+          "colorName",
+          "colorFamilies",
+          "imageUrls"
+        ]
+      },
+      "UpdateReviewDto": {
+        "type": "object",
+        "properties": {
+          "editedModelData": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScrapedModelDataDto"
+              }
+            ]
+          },
+          "editedVariantData": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScrapedVariantDataDto"
+              }
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        }
       }
     }
   }

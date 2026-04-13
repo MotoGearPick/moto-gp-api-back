@@ -25,11 +25,13 @@ export class HelmetInventoryAdminController {
   @Post()
   @ApiOperation({
     summary: '[Admin] Agregar entrada de inventario',
-    description: 'Crea un registro de precio y stock para una talla específica en una tienda afiliada. La combinación sizeId + storeId debe ser única.',
+    description:
+      'Crea un registro de precio y stock para una variante/talla específica en una tienda afiliada. ' +
+      'La combinación variantId + sizeId + storeId debe ser única.',
   })
   @ApiBody({ type: CreateHelmetInventoryDto })
   @ApiResponse({ status: 201, description: 'Inventario creado' })
-  @ApiResponse({ status: 400, description: 'Combinación talla+tienda ya existe o datos inválidos' })
+  @ApiResponse({ status: 400, description: 'Combinación variante+talla+tienda ya existe o datos inválidos' })
   create(@Body() dto: CreateHelmetInventoryDto) {
     return this.service.create(dto);
   }
