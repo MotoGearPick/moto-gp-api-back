@@ -2475,6 +2475,37 @@
           "Admin — Stores"
         ]
       }
+    },
+    "/contact": {
+      "post": {
+        "operationId": "ContactController_sendContact",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContactDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email enviado satisfactoriamente"
+          },
+          "400": {
+            "description": "Datos inválidos"
+          },
+          "500": {
+            "description": "Error al enviar el email"
+          }
+        },
+        "summary": "Enviar mensaje de contacto",
+        "tags": [
+          "Contact"
+        ]
+      }
     }
   },
   "info": {
@@ -3356,6 +3387,32 @@
             "nullable": true
           }
         }
+      },
+      "CreateContactDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Aaron",
+            "description": "Nombre del remitente"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "aaronq@motogearpick.com",
+            "description": "Correo del remitente"
+          },
+          "message": {
+            "type": "string",
+            "example": "Tengo una pregunta...",
+            "description": "Mensaje"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "message"
+        ]
       }
     }
   }

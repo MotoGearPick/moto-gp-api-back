@@ -7,8 +7,9 @@ import { BackupModule } from './modules/backup/backup.module';
 import { ScraperModule } from './modules/scraper/scraper.module';
 import { S3Module } from './modules/s3/s3.module';
 import { StoresModule } from './modules/stores/stores.module';
+import { ContactModule } from './modules/contact/contact.module';
 
 @Module({
-  imports: [PrismaModule, LoggerModule, S3Module, GearModule, AuthModule, BackupModule, ScraperModule, StoresModule],
+  imports: [PrismaModule, LoggerModule, S3Module, GearModule, AuthModule, BackupModule, ScraperModule, StoresModule, ContactModule],
 })
 export class AppModule {}
