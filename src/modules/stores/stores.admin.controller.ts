@@ -23,10 +23,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { memoryStorage } from 'multer';
+import { SkipThrottle } from '@nestjs/throttler';
 import { AdminAccessTokenGuard } from '../auth/guards';
 import { StoresAdminService } from './stores.admin.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 
+@SkipThrottle()
 @UseGuards(AdminAccessTokenGuard)
 @ApiBearerAuth()
 @ApiTags('Admin — Stores')

@@ -1,9 +1,12 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiSecurity } from '@nestjs/swagger';
+import { ApiKeyGuard } from '../../common/guards';
 import { ContactService } from './contact.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 
 @ApiTags('Contact')
+@ApiSecurity('x-api-key')
+@UseGuards(ApiKeyGuard)
 @Controller('contact')
 export class ContactController {
   constructor(private readonly contactService: ContactService) {}

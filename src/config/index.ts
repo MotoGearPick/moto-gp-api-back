@@ -5,6 +5,7 @@ export interface AppConfig {
   APP_ENV: string;
   APP_URL: string;
   CORS_URLS: string;
+  PUBLIC_API_KEY: string;
 
   APP_DATABASE_URL: string;
   PRODUCTS_DATABASE_URL: string;
@@ -26,9 +27,10 @@ export interface AppConfig {
 
 export const config = (): AppConfig => ({
   PORT: Number(optionalEnv('PORT', '3000')),
-  APP_ENV: optionalEnv('APP_ENV', 'local'),
+  APP_ENV: requireEnv('APP_ENV'),
   APP_URL: requireEnv('APP_URL'),
   CORS_URLS: optionalEnv('CORS_URLS', ''),
+  PUBLIC_API_KEY: requireEnv('PUBLIC_API_KEY'),
 
   APP_DATABASE_URL: requireEnv('APP_DATABASE_URL'),
   PRODUCTS_DATABASE_URL: requireEnv('PRODUCTS_DATABASE_URL'),

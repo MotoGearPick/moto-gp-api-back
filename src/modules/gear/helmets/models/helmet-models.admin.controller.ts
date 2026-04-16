@@ -13,12 +13,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { AdminAccessTokenGuard } from '../../../auth/guards';
 import { HelmetModelsAdminService } from './helmet-models-admin.service';
 import { CreateHelmetModelDto } from './dto/create-helmet-model.dto';
 import { UpdateHelmetModelDto } from './dto/update-helmet-model.dto';
 import { FilterHelmetModelsAdminDto } from './dto/filter-helmet-models-admin.dto';
 
+@SkipThrottle()
 @UseGuards(AdminAccessTokenGuard)
 @ApiBearerAuth()
 @ApiTags('Admin — Helmets')

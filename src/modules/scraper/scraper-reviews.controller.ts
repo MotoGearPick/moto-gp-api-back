@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { AdminAccessTokenGuard } from '../auth/guards';
 import { ScraperReviewsService } from './scraper-reviews.service';
 import { FilterReviewsDto } from './dto';
@@ -16,6 +17,7 @@ import { UpdateReviewDto } from './dto';
 import { EditGroupModelDto } from './dto';
 import { BatchApproveDto, BatchRejectDto } from './dto';
 
+@SkipThrottle()
 @UseGuards(AdminAccessTokenGuard)
 @ApiBearerAuth()
 @ApiTags('Scraper Reviews')

@@ -10,11 +10,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { AdminAccessTokenGuard } from '../../../auth/guards';
 import { HelmetInventoryService } from './helmet-inventory.service';
 import { CreateHelmetInventoryDto } from './dto/create-helmet-inventory.dto';
 import { UpdateHelmetInventoryDto } from './dto/update-helmet-inventory.dto';
 
+@SkipThrottle()
 @UseGuards(AdminAccessTokenGuard)
 @ApiBearerAuth()
 @ApiTags('Admin — Helmet Inventory')

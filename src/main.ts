@@ -7,15 +7,21 @@ import { writeFileSync } from 'fs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const corsUrls = process.env.CORS_URLS?.split(',').map((u) => u.trim()).filter(Boolean) ?? [];
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  app.enableCors();
+  app.enableCors({
+    origin: process.env.APP_ENV === 'local' ? true : corsUrls,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    credentials: true,
+  });
 
   const config = new DocumentBuilder()
     .setTitle('Moto Gear Picker API')
     .setDescription('API para selección y gestión de equipamiento de moto')
     .setVersion('1.0')
     .addBearerAuth()
+    .addApiKey({ type: 'apiKey', in: 'header', name: 'x-api-key' }, 'x-api-key')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

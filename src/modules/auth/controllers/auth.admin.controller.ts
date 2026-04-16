@@ -11,11 +11,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBody, ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { AuthAdminService } from '../services/auth.admin.service';
 import { LoginAdminDto } from '../dto';
 import { RegisterAdminDto } from '../dto';
 import { AdminAccessTokenGuard, LoginGuard } from '../guards';
 
+@SkipThrottle()
 @ApiTags('Admin — Auth')
 @Controller('admin/auth')
 export class AuthAdminController {
@@ -23,6 +25,8 @@ export class AuthAdminController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @SkipThrottle({skip: false})
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @UseGuards(LoginGuard)
   @ApiOperation({ summary: '[Admin] Iniciar sesión' })
   @ApiBody({ type: LoginAdminDto })

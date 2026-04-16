@@ -1,8 +1,11 @@
-import { Controller, Get } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { ApiKeyGuard } from '../../common/guards';
 import { StoresService } from './stores.service';
 
 @ApiTags('Stores')
+@ApiSecurity('x-api-key')
+@UseGuards(ApiKeyGuard)
 @Controller('stores')
 export class StoresController {
   constructor(private readonly service: StoresService) {}

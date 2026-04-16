@@ -1,9 +1,12 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { ApiKeyGuard } from '../../../../common/guards';
 import { HelmetModelsService } from './helmet-models.service';
 import { FilterHelmetModelsDto } from './dto/filter-helmet-models.dto';
 
 @ApiTags('Helmets')
+@ApiSecurity('x-api-key')
+@UseGuards(ApiKeyGuard)
 @Controller('gear/helmets')
 export class HelmetModelsController {
   constructor(private readonly service: HelmetModelsService) {}
