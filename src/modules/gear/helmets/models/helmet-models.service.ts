@@ -243,7 +243,7 @@ export class HelmetModelsService {
     if (mono && colors?.length) {
       colorWhere = { OR: colors.map((c) => ({ color_families: { equals: [c as any] } })) };
     } else if (colors?.length) {
-      colorWhere = { color_families: { hasSome: colors as any[] } };
+      colorWhere = { color_families: { hasEvery: colors as any[] } };
     }
 
     return {
