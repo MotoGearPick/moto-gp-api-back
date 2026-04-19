@@ -1,5 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/products-client';
+import {
+  Prisma,
+  color_family,
+  helmet_certification,
+  helmet_closure_type,
+  helmet_finish,
+  helmet_purpose,
+  helmet_shape,
+  helmet_shell_material,
+  visor_pinlock,
+} from '@prisma/products-client';
 import { paginate } from '../../../../common/pagination';
 import { ProductsPrismaService } from '../../../../prisma/products-prisma.service';
 import { HelmetCacheService } from '../../../valkey/helmet-cache.service';
@@ -83,14 +93,14 @@ export class HelmetVariantsService {
       data: {
         helmet_id: modelId,
         color_name: dto.colorName,
-        color_families: (dto.colorFamilies as any[]) ?? [],
-        finish: dto.finish as any,
+        color_families: (dto.colorFamilies ?? []) as color_family[],
+        finish: dto.finish as helmet_finish | undefined,
         graphic_name: dto.graphicName,
         sku: dto.sku,
         image_url: dto.images ?? [],
       },
     });
-    this.cache.invalidateHelmet(modelId).catch(() => null);
+    await this.cache.invalidateHelmet(modelId);
     return result;
   }
 
@@ -101,15 +111,15 @@ export class HelmetVariantsService {
       where: { id: variantId },
       data: {
         ...(dto.colorName && { color_name: dto.colorName }),
-        ...(dto.colorFamilies && { color_families: dto.colorFamilies as any[] }),
-        ...(dto.finish && { finish: dto.finish as any }),
+        ...(dto.colorFamilies && { color_families: dto.colorFamilies as color_family[] }),
+        ...(dto.finish && { finish: dto.finish as helmet_finish }),
         ...(dto.graphicName !== undefined && { graphic_name: dto.graphicName }),
         ...(dto.sku !== undefined && { sku: dto.sku }),
         ...(dto.images !== undefined && { image_url: dto.images }),
         updated_at: new Date(),
       },
     });
-    this.cache.invalidateHelmet(modelId).catch(() => null);
+    await this.cache.invalidateHelmet(modelId);
     return result;
   }
 
@@ -119,7 +129,7 @@ export class HelmetVariantsService {
       where: { id: variantId },
       data: { deleted_at: new Date() },
     });
-    this.cache.invalidateHelmet(modelId).catch(() => null);
+    await this.cache.invalidateHelmet(modelId);
   }
 
   async restore(modelId: string, variantId: string) {
@@ -135,7 +145,7 @@ export class HelmetVariantsService {
       where: { id: variantId },
       data: { deleted_at: null, updated_at: new Date() },
     });
-    this.cache.invalidateHelmet(modelId).catch(() => null);
+    await this.cache.invalidateHelmet(modelId);
     return result;
   }
 
@@ -156,25 +166,25 @@ export class HelmetVariantsService {
       ...(filters.colorFamily && {
         color_families: filters.mono
           ? // Modo mono: exactamente ese color (sin multicolor)
-            { equals: [filters.colorFamily as any] }
+            { equals: [filters.colorFamily as color_family] }
           : // Modo normal: tiene ese color entre otros
-            { has: filters.colorFamily as any },
+            { has: filters.colorFamily as color_family },
       }),
-      ...(filters.finish && { finish: filters.finish as any }),
+      ...(filters.finish && { finish: filters.finish as helmet_finish }),
 
       // Model filters
       helmet_model: {
         ...(!showDeleted && { deleted_at: null }),
         ...(filters.modelId && { id: filters.modelId }),
         ...(filters.brandSlug && { brand: { slug: filters.brandSlug, deleted_at: null } }),
-        ...(filters.shape?.length && { helmet_shape: { hasSome: filters.shape as any[] } }),
-        ...(filters.purpose?.length && { helmet_purpose: { hasSome: filters.purpose as any[] } }),
-        ...(filters.shellMaterial?.length && { shell_material: { hasSome: filters.shellMaterial as any[] } }),
-        ...(filters.closureType && { closure_type: filters.closureType as any }),
-        ...(filters.visorPinlockCompatible?.length && { visor_pinlock_compatible: { hasSome: filters.visorPinlockCompatible as any[] } }),
+        ...(filters.shape?.length && { helmet_shape: { hasSome: filters.shape as helmet_shape[] } }),
+        ...(filters.purpose?.length && { helmet_purpose: { hasSome: filters.purpose as helmet_purpose[] } }),
+        ...(filters.shellMaterial?.length && { shell_material: { hasSome: filters.shellMaterial as helmet_shell_material[] } }),
+        ...(filters.closureType && { closure_type: filters.closureType as helmet_closure_type }),
+        ...(filters.visorPinlockCompatible?.length && { visor_pinlock_compatible: { hasSome: filters.visorPinlockCompatible as visor_pinlock[] } }),
         ...(filters.visorPinlockIncluded !== undefined && { visor_pinlock_included: filters.visorPinlockIncluded }),
         ...(filters.tearOffCompatible !== undefined && { tear_off_compatible: filters.tearOffCompatible }),
-        ...(filters.certification?.length && { certification: { hasEvery: filters.certification as any[] } }),
+        ...(filters.certification?.length && { certification: { hasEvery: filters.certification as helmet_certification[] } }),
         ...(filters.sunVisor !== undefined && { sun_visor: filters.sunVisor }),
         ...(filters.intercomReady !== undefined && { intercom_ready: filters.intercomReady }),
         ...(filters.visorAntiScratch !== undefined && { visor_anti_scratch: filters.visorAntiScratch }),

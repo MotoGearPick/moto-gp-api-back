@@ -28,7 +28,7 @@ export class BrandsService {
       select: { id: true, name: true, slug: true, created_at: true },
     });
 
-    this.brandCache.reload().catch(() => null);
+    await this.brandCache.reload();
     return result;
   }
 

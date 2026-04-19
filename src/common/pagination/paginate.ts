@@ -37,8 +37,9 @@ export async function paginate<
   include,
   select,
 }: PaginateOptions<TModel>): Promise<PaginatedResponse<TResult>> {
-  const page = pagination.page ?? 1;
-  const limit = pagination.limit ?? 20;
+  const MAX_LIMIT = 100;
+  const page = Math.max(1, pagination.page ?? 1);
+  const limit = Math.min(MAX_LIMIT, Math.max(1, pagination.limit ?? 20));
   const skip = (page - 1) * limit;
 
   const [items, total] = await Promise.all([

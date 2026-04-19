@@ -94,7 +94,11 @@ export class HelmetCacheService {
   }
 
   async reload(): Promise<void> {
-    await Promise.all([this.loadCatalog(), this.loadAllDetails()]);
+    try {
+      await Promise.all([this.loadCatalog(), this.loadAllDetails()]);
+    } catch (err) {
+      this.logger.error('Failed to reload helmet cache', err);
+    }
   }
 
   // ─── Private loaders ─────────────────────────────────────────────────────────

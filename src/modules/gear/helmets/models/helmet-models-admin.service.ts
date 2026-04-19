@@ -1,5 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/products-client';
+import {
+  Prisma,
+  helmet_certification,
+  helmet_closure_type,
+  helmet_purpose,
+  helmet_shape,
+  helmet_shell_material,
+  visor_pinlock,
+} from '@prisma/products-client';
 import { paginate } from '../../../../common/pagination';
 import { ProductsPrismaService } from '../../../../prisma/products-prisma.service';
 import { HelmetCacheService } from '../../../valkey/helmet-cache.service';
@@ -48,15 +56,15 @@ export class HelmetModelsAdminService {
         name: dto.name,
         slug: dto.slug,
         brand_id: dto.brandId,
-        helmet_shape: (dto.helmetShape as any[]) ?? [],
-        helmet_purpose: (dto.helmetPurpose as any[]) ?? [],
+        helmet_shape: (dto.helmetShape ?? []) as helmet_shape[],
+        helmet_purpose: (dto.helmetPurpose ?? []) as helmet_purpose[],
         safety_rating: dto.safetyRating,
-        shell_material: (dto.shellMaterial as any[]) ?? [],
+        shell_material: (dto.shellMaterial ?? []) as helmet_shell_material[],
         shell_sizes: dto.shellSizes,
         weight_grams: dto.weightGrams,
         visor_anti_scratch: dto.visorAntiScratch ?? false,
         visor_anti_fog: dto.visorAntiFog ?? false,
-        visor_pinlock_compatible: (dto.visorPinlockCompatible as any[]) ?? [],
+        visor_pinlock_compatible: (dto.visorPinlockCompatible ?? []) as visor_pinlock[],
         visor_pinlock_included: dto.visorPinlockIncluded ?? false,
         pinlock_dks_code: dto.pinlockDksCode,
         tear_off_compatible: dto.tearOffCompatible ?? false,
@@ -68,14 +76,14 @@ export class HelmetModelsAdminService {
         removable_lining: dto.removableLining ?? true,
         washable_lining: dto.washableLining ?? true,
         emergency_release: dto.emergencyRelease ?? false,
-        closure_type: dto.closureType as any,
-        certification: (dto.certification as any[]) ?? [],
+        closure_type: dto.closureType as helmet_closure_type | undefined,
+        certification: (dto.certification ?? []) as helmet_certification[],
         included_accessories: dto.includedAccessories ?? [],
       },
       include: this.buildDetailInclude(),
     });
 
-    this.cache.invalidateHelmet(item.id).catch(() => null);
+    await this.cache.invalidateHelmet(item.id);
     return this.mapDetail(item);
   }
 
@@ -88,15 +96,15 @@ export class HelmetModelsAdminService {
         ...(dto.name && { name: dto.name }),
         ...(dto.slug && { slug: dto.slug }),
         ...(dto.brandId && { brand_id: dto.brandId }),
-        ...(dto.helmetShape && { helmet_shape: dto.helmetShape as any[] }),
-        ...(dto.helmetPurpose && { helmet_purpose: dto.helmetPurpose as any[] }),
+        ...(dto.helmetShape && { helmet_shape: dto.helmetShape as helmet_shape[] }),
+        ...(dto.helmetPurpose && { helmet_purpose: dto.helmetPurpose as helmet_purpose[] }),
         ...(dto.safetyRating !== undefined && { safety_rating: dto.safetyRating }),
-        ...(dto.shellMaterial && { shell_material: dto.shellMaterial as any[] }),
+        ...(dto.shellMaterial && { shell_material: dto.shellMaterial as helmet_shell_material[] }),
         ...(dto.shellSizes !== undefined && { shell_sizes: dto.shellSizes }),
         ...(dto.weightGrams !== undefined && { weight_grams: dto.weightGrams }),
         ...(dto.visorAntiScratch !== undefined && { visor_anti_scratch: dto.visorAntiScratch }),
         ...(dto.visorAntiFog !== undefined && { visor_anti_fog: dto.visorAntiFog }),
-        ...(dto.visorPinlockCompatible && { visor_pinlock_compatible: dto.visorPinlockCompatible as any[] }),
+        ...(dto.visorPinlockCompatible && { visor_pinlock_compatible: dto.visorPinlockCompatible as visor_pinlock[] }),
         ...(dto.visorPinlockIncluded !== undefined && { visor_pinlock_included: dto.visorPinlockIncluded }),
         ...(dto.pinlockDksCode !== undefined && { pinlock_dks_code: dto.pinlockDksCode }),
         ...(dto.tearOffCompatible !== undefined && { tear_off_compatible: dto.tearOffCompatible }),
@@ -108,15 +116,15 @@ export class HelmetModelsAdminService {
         ...(dto.removableLining !== undefined && { removable_lining: dto.removableLining }),
         ...(dto.washableLining !== undefined && { washable_lining: dto.washableLining }),
         ...(dto.emergencyRelease !== undefined && { emergency_release: dto.emergencyRelease }),
-        ...(dto.closureType && { closure_type: dto.closureType as any }),
-        ...(dto.certification && { certification: dto.certification as any[] }),
+        ...(dto.closureType && { closure_type: dto.closureType as helmet_closure_type }),
+        ...(dto.certification && { certification: dto.certification as helmet_certification[] }),
         ...(dto.includedAccessories && { included_accessories: dto.includedAccessories }),
         updated_at: new Date(),
       },
       include: this.buildDetailInclude(),
     });
 
-    this.cache.invalidateHelmet(id).catch(() => null);
+    await this.cache.invalidateHelmet(id);
     return this.mapDetail(item);
   }
 
@@ -126,7 +134,7 @@ export class HelmetModelsAdminService {
       where: { id },
       data: { deleted_at: new Date() },
     });
-    this.cache.invalidateHelmet(id).catch(() => null);
+    await this.cache.invalidateHelmet(id);
   }
 
   async restore(id: string) {
@@ -139,7 +147,7 @@ export class HelmetModelsAdminService {
       include: this.buildDetailInclude(),
     });
 
-    this.cache.invalidateHelmet(id).catch(() => null);
+    await this.cache.invalidateHelmet(id);
     return this.mapDetail(restored);
   }
 
@@ -173,11 +181,11 @@ export class HelmetModelsAdminService {
       ...(filters.brandSlug && { brand: { slug: filters.brandSlug } }),
       ...(filters.name && { name: { contains: filters.name, mode: 'insensitive' } }),
       ...(filters.slug && { slug: { contains: filters.slug, mode: 'insensitive' } }),
-      ...(filters.shape?.length && { helmet_shape: { hasSome: filters.shape as any[] } }),
-      ...(filters.purpose?.length && { helmet_purpose: { hasSome: filters.purpose as any[] } }),
-      ...(filters.shellMaterial?.length && { shell_material: { hasSome: filters.shellMaterial as any[] } }),
-      ...(filters.closureType && { closure_type: filters.closureType as any }),
-      ...(filters.visorPinlockCompatible?.length && { visor_pinlock_compatible: { hasSome: filters.visorPinlockCompatible as any[] } }),
+      ...(filters.shape?.length && { helmet_shape: { hasSome: filters.shape as helmet_shape[] } }),
+      ...(filters.purpose?.length && { helmet_purpose: { hasSome: filters.purpose as helmet_purpose[] } }),
+      ...(filters.shellMaterial?.length && { shell_material: { hasSome: filters.shellMaterial as helmet_shell_material[] } }),
+      ...(filters.closureType && { closure_type: filters.closureType as helmet_closure_type }),
+      ...(filters.visorPinlockCompatible?.length && { visor_pinlock_compatible: { hasSome: filters.visorPinlockCompatible as visor_pinlock[] } }),
       ...(filters.visorPinlockIncluded !== undefined && { visor_pinlock_included: filters.visorPinlockIncluded }),
       ...(filters.tearOffCompatible !== undefined && { tear_off_compatible: filters.tearOffCompatible }),
       ...(filters.sunVisor !== undefined && { sun_visor: filters.sunVisor }),
@@ -197,7 +205,7 @@ export class HelmetModelsAdminService {
           ...(filters.maxWeightGrams !== undefined && { lte: filters.maxWeightGrams }),
         },
       }),
-      ...(filters.certification?.length && { certification: { hasEvery: filters.certification as any[] } }),
+      ...(filters.certification?.length && { certification: { hasEvery: filters.certification as helmet_certification[] } }),
       ...(createdAtFilter && { created_at: createdAtFilter }),
       ...(updatedAtFilter && { updated_at: updatedAtFilter }),
       ...(filters.missingWeightGrams && { weight_grams: null }),

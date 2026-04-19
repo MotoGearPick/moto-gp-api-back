@@ -5,7 +5,17 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/products-client';
+import {
+  Prisma,
+  color_family,
+  helmet_certification,
+  helmet_closure_type,
+  helmet_finish,
+  helmet_purpose,
+  helmet_shape,
+  helmet_shell_material,
+  visor_pinlock,
+} from '@prisma/products-client';
 import { ProductsPrismaService } from '../../prisma/products-prisma.service';
 import { FilterReviewsDto } from './dto';
 import { UpdateReviewDto } from './dto';
@@ -36,7 +46,7 @@ export class ScraperReviewsService {
     }
 
     // Fallback: old flat raw_data
-    const raw = review.raw_data as any;
+    const raw = review.raw_data as Record<string, unknown> | null;
     if (raw && raw.modelData && raw.variantData) {
       return {
         modelData: raw.modelData as ScrapedModelData,
@@ -101,11 +111,11 @@ export class ScraperReviewsService {
   private getModelSlug(review: any): string {
     // Edited model data takes priority (user may have re-grouped)
     if (review.edited_model_data) {
-      return (review.edited_model_data as any).modelSlug ?? '';
+      return (review.edited_model_data as Partial<ScrapedModelData>).modelSlug ?? '';
     }
     // Dedicated column
     if (review.raw_model_data) {
-      return (review.raw_model_data as any).modelSlug ?? '';
+      return (review.raw_model_data as Partial<ScrapedModelData>).modelSlug ?? '';
     }
     // Fallback to raw_data
     const { modelData } = this.extractData(review);
@@ -315,7 +325,7 @@ export class ScraperReviewsService {
       groupReviews.map((r) =>
         this.prisma.scrape_review.update({
           where: { id: r.id },
-          data: { edited_model_data: editedModelData as any },
+          data: { edited_model_data: editedModelData as unknown as Prisma.InputJsonValue },
         }),
       ),
     );
@@ -389,12 +399,12 @@ export class ScraperReviewsService {
           slug: modelData.modelSlug,
           name: modelData.modelName,
           brand_id: brand.id,
-          helmet_shape: modelData.helmetShape as any[],
-          helmet_purpose: modelData.helmetPurpose as any[],
-          shell_material: modelData.shellMaterial as any[],
+          helmet_shape: modelData.helmetShape as helmet_shape[],
+          helmet_purpose: modelData.helmetPurpose as helmet_purpose[],
+          shell_material: modelData.shellMaterial as helmet_shell_material[],
           shell_sizes: modelData.shellSizes ?? undefined,
           weight_grams: modelData.weightGrams ?? undefined,
-          visor_pinlock_compatible: modelData.visorPinlockCompatible as any[],
+          visor_pinlock_compatible: modelData.visorPinlockCompatible as visor_pinlock[],
           visor_pinlock_included: modelData.visorPinlockIncluded,
           pinlock_dks_code: modelData.pinlockDksCode,
           visor_anti_scratch: modelData.visorAntiScratch,
@@ -407,8 +417,8 @@ export class ScraperReviewsService {
           removable_lining: modelData.removableLining,
           washable_lining: modelData.washableLining,
           emergency_release: modelData.emergencyRelease,
-          closure_type: (modelData.closureType as any) ?? undefined,
-          certification: modelData.certification as any[],
+          closure_type: (modelData.closureType as helmet_closure_type) ?? undefined,
+          certification: modelData.certification as helmet_certification[],
           tear_off_compatible: modelData.tearOffCompatible,
           included_accessories: modelData.includedAccessories,
         },
@@ -426,8 +436,8 @@ export class ScraperReviewsService {
               },
             },
             update: {
-              color_families: { set: variantData.colorFamilies as any[] },
-              finish: (variantData.finish as any) ?? undefined,
+              color_families: { set: variantData.colorFamilies as color_family[] },
+              finish: (variantData.finish as helmet_finish) ?? undefined,
               graphic_name: variantData.graphicName,
               sku: variantData.sku,
               image_url: { set: variantData.imageUrls },
@@ -435,8 +445,8 @@ export class ScraperReviewsService {
             create: {
               helmet_id: model.id,
               color_name: variantData.colorName,
-              color_families: variantData.colorFamilies as any[],
-              finish: (variantData.finish as any) ?? undefined,
+              color_families: variantData.colorFamilies as color_family[],
+              finish: (variantData.finish as helmet_finish) ?? undefined,
               graphic_name: variantData.graphicName,
               sku: variantData.sku,
               image_url: variantData.imageUrls,
@@ -574,12 +584,12 @@ export class ScraperReviewsService {
           slug: modelData.modelSlug,
           name: modelData.modelName,
           brand_id: brand.id,
-          helmet_shape: modelData.helmetShape as any[],
-          helmet_purpose: modelData.helmetPurpose as any[],
-          shell_material: modelData.shellMaterial as any[],
+          helmet_shape: modelData.helmetShape as helmet_shape[],
+          helmet_purpose: modelData.helmetPurpose as helmet_purpose[],
+          shell_material: modelData.shellMaterial as helmet_shell_material[],
           shell_sizes: modelData.shellSizes ?? undefined,
           weight_grams: modelData.weightGrams ?? undefined,
-          visor_pinlock_compatible: modelData.visorPinlockCompatible as any[],
+          visor_pinlock_compatible: modelData.visorPinlockCompatible as visor_pinlock[],
           visor_pinlock_included: modelData.visorPinlockIncluded,
           pinlock_dks_code: modelData.pinlockDksCode,
           visor_anti_scratch: modelData.visorAntiScratch,
@@ -592,8 +602,8 @@ export class ScraperReviewsService {
           removable_lining: modelData.removableLining,
           washable_lining: modelData.washableLining,
           emergency_release: modelData.emergencyRelease,
-          closure_type: (modelData.closureType as any) ?? undefined,
-          certification: modelData.certification as any[],
+          closure_type: (modelData.closureType as helmet_closure_type) ?? undefined,
+          certification: modelData.certification as helmet_certification[],
           tear_off_compatible: modelData.tearOffCompatible,
           included_accessories: modelData.includedAccessories,
         },
@@ -608,8 +618,8 @@ export class ScraperReviewsService {
           },
         },
         update: {
-          color_families: { set: variantData.colorFamilies as any[] },
-          finish: (variantData.finish as any) ?? undefined,
+          color_families: { set: variantData.colorFamilies as color_family[] },
+          finish: (variantData.finish as helmet_finish) ?? undefined,
           graphic_name: variantData.graphicName,
           sku: variantData.sku,
           image_url: { set: variantData.imageUrls },
@@ -617,8 +627,8 @@ export class ScraperReviewsService {
         create: {
           helmet_id: model.id,
           color_name: variantData.colorName,
-          color_families: variantData.colorFamilies as any[],
-          finish: (variantData.finish as any) ?? undefined,
+          color_families: variantData.colorFamilies as color_family[],
+          finish: (variantData.finish as helmet_finish) ?? undefined,
           graphic_name: variantData.graphicName,
           sku: variantData.sku,
           image_url: variantData.imageUrls,

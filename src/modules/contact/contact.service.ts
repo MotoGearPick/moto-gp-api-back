@@ -1,5 +1,6 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { Resend } from 'resend';
+import { config } from '../../config';
 import { CreateContactDto } from './dto/create-contact.dto';
 
 @Injectable()
@@ -8,11 +9,7 @@ export class ContactService {
   private readonly logger = new Logger(ContactService.name);
 
   constructor() {
-    const resendApiKey = process.env.RESEND_API_KEY;
-    if (!resendApiKey) {
-      this.logger.warn('RESEND_API_KEY is not defined in the environment variables');
-    }
-    this.resend = new Resend(resendApiKey);
+    this.resend = new Resend(config().RESEND_API_KEY);
   }
 
   async sendContactEmail(contactDto: CreateContactDto) {

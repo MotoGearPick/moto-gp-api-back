@@ -1,5 +1,5 @@
 import { ConflictException, Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { Admin } from '@prisma/app-client';
 import * as bcrypt from 'bcrypt';
 import { config } from '../../../config';
@@ -23,25 +23,19 @@ export class AuthAdminService {
   }
 
   private getAccessToken(id: string): Promise<string> {
-    return this.jwtService.signAsync(
-        {
-            id,
-        },
-        {
-            secret: config().JWT_ADMIN_ACCESS_SECRET,
-           /* expiresIn: expiresIn ?? config().JWT_ADMIN_ACCESS_EXPIRES,*/
-        },
-    );
+    const opts: JwtSignOptions = {
+      secret: config().JWT_ADMIN_ACCESS_SECRET,
+      expiresIn: config().JWT_ADMIN_ACCESS_EXPIRES as unknown as number,
+    };
+    return this.jwtService.signAsync({ id }, opts);
   }
 
   private getRefreshToken(id: string): Promise<string> {
-    return this.jwtService.signAsync(
-      { id },
-        {
-            secret: config().JWT_ADMIN_REFRESH_SECRET,
-            /* expiresIn: expiresIn ?? config().JWT_ADMIN_ACCESS_EXPIRES,*/
-        },
-    );
+    const opts: JwtSignOptions = {
+      secret: config().JWT_ADMIN_REFRESH_SECRET,
+      expiresIn: config().JWT_ADMIN_REFRESH_EXPIRES as unknown as number,
+    };
+    return this.jwtService.signAsync({ id }, opts);
   }
 
   async register(dto: RegisterAdminDto) {

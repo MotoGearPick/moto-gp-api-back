@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -76,10 +77,11 @@ export class StoresAdminController {
   @UseInterceptors(
     FileInterceptor('logo', {
       storage: memoryStorage(),
-      limits: { fileSize: 2 * 1024 * 1024 },
+      limits: { fileSize: 2 * 1024 * 1024, files: 1 },
       fileFilter: (_req, file, cb) => {
-        if (!file.mimetype.startsWith('image/')) {
-          return cb(new Error('Solo se permiten imágenes'), false);
+        const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+        if (!allowed.includes(file.mimetype)) {
+          return cb(new BadRequestException('Solo se permiten imágenes JPEG, PNG, WebP o AVIF'), false);
         }
         cb(null, true);
       },

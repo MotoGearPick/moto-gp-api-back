@@ -27,7 +27,7 @@ export class HelmetInventoryService {
         helmet_size: { select: { id: true, size_label: true } },
       },
     });
-    this.cache.reload().catch(() => null);
+    await this.cache.reload();
     return result;
   }
 
@@ -52,14 +52,14 @@ export class HelmetInventoryService {
         helmet_size: { select: { id: true, size_label: true } },
       },
     });
-    this.cache.reload().catch(() => null);
+    await this.cache.reload();
     return result;
   }
 
   async remove(id: string) {
     await this.assertExists(id);
     await this.db.helmet_inventory.delete({ where: { id } });
-    this.cache.reload().catch(() => null);
+    await this.cache.reload();
   }
 
   private async assertExists(id: string) {

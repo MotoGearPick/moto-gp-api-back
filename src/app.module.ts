@@ -11,6 +11,7 @@ import { StoresModule } from './modules/stores/stores.module';
 import { ContactModule } from './modules/contact/contact.module';
 import { SecurityModule } from './modules/security/security.module';
 import { ValkeyModule } from './modules/valkey/valkey.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ValkeyModule } from './modules/valkey/valkey.module';
     ScraperModule,
     StoresModule,
     ContactModule,
+    HealthModule,
   ],
 })
 export class AppModule {}

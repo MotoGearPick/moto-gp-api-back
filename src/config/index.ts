@@ -25,6 +25,9 @@ export interface AppConfig {
   S3_BUCKET: string;
   S3_REGION: string;
   S3_ENDPOINT: string;
+  S3_PUBLIC_URL: string;
+
+  RESEND_API_KEY: string;
 }
 
 export const config = (): AppConfig => ({
@@ -52,4 +55,7 @@ export const config = (): AppConfig => ({
   S3_BUCKET: requireEnv('S3_BUCKET'),
   S3_REGION: optionalEnv('S3_REGION', 'auto'),
   S3_ENDPOINT: requireEnv('S3_ENDPOINT'),
+  S3_PUBLIC_URL: optionalEnv('S3_PUBLIC_URL', ''),
+
+  RESEND_API_KEY: requireEnv('RESEND_API_KEY'),
 });

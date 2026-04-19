@@ -1,4 +1,4 @@
-const publicUrl = process.env.S3_PUBLIC_URL ?? '';
+import { config } from '../../config';
 
 /**
  * Convierte una key relativa de S3 en una URL pública absoluta.
@@ -8,5 +8,6 @@ const publicUrl = process.env.S3_PUBLIC_URL ?? '';
 export function resolveLogoUrl(logoUrl: string | null | undefined): string | null {
   if (!logoUrl) return null;
   if (logoUrl.startsWith('http')) return logoUrl;
+  const publicUrl = config().S3_PUBLIC_URL;
   return publicUrl ? `${publicUrl}/${logoUrl}` : logoUrl;
 }

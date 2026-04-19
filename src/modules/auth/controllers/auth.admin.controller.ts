@@ -45,7 +45,7 @@ export class AuthAdminController {
   @ApiResponse({ status: 201, description: 'Usuario admin creado' })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiResponse({ status: 409, description: 'Email ya en uso' })
-  register(@Body() dto: RegisterAdminDto) {
+  async register(@Body() dto: RegisterAdminDto) {
     return this.service.register(dto);
   }
 
