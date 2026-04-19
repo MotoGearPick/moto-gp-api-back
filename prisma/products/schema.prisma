@@ -80,6 +80,8 @@ model helmet_model {
   updated_at               DateTime                @default(now()) @db.Timestamptz(6)
   deleted_at               DateTime?               @db.Timestamptz(6)
   helmet_type              helmet_type[]
+  helmet_shape             helmet_shape[]          @default([])
+  helmet_purpose           helmet_purpose[]        @default([])
   shell_material           helmet_shell_material[]
   visor_pinlock_compatible visor_pinlock[]
   visor_pinlock_included   Boolean?                @default(false)
@@ -220,6 +222,21 @@ enum helmet_type {
   open_face
   half
   off_road
+}
+
+enum helmet_shape {
+  full_face
+  modular
+  open_face
+  half
+  motocross
+}
+
+enum helmet_purpose {
+  street
+  off_road
+  snow
+  trials
 }
 
 enum review_status {

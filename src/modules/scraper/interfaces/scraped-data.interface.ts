@@ -2,7 +2,8 @@ export interface ScrapedModelData {
   modelName: string;
   modelSlug: string;
   brandSlug: string;
-  helmetType: string[];
+  helmetShape: string[];
+  helmetPurpose: string[];
   safetyRating: number | null;
   shellMaterial: string[];
   shellSizes: number | null;

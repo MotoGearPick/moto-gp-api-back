@@ -15,8 +15,9 @@ import { PaginationDto } from '../../../../../common/pagination';
 import {
   HelmetCertification,
   HelmetClosureType,
+  HelmetPurpose,
+  HelmetShape,
   HelmetShellMaterial,
-  HelmetType,
   VisorPinlock,
 } from '../../enums';
 
@@ -43,9 +44,15 @@ export class FilterHelmetModelsAdminDto extends PaginationDto {
 
   @IsOptional()
   @IsArray()
-  @IsEnum(HelmetType, { each: true })
+  @IsEnum(HelmetShape, { each: true })
   @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
-  type?: HelmetType[];
+  shape?: HelmetShape[];
+
+  @IsOptional()
+  @IsArray()
+  @IsEnum(HelmetPurpose, { each: true })
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  purpose?: HelmetPurpose[];
 
   @IsOptional()
   @IsArray()

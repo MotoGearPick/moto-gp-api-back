@@ -1,7 +1,7 @@
-export enum HelmetType {
+export enum HelmetShape {
   FULL_FACE = 'full_face',
   MODULAR = 'modular',
   OPEN_FACE = 'open_face',
   HALF = 'half',
-  OFF_ROAD = 'off_road',
+  MOTOCROSS = 'motocross',
 }

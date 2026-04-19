@@ -18,8 +18,9 @@ import {
   HelmetCertification,
   HelmetClosureType,
   HelmetFinish,
+  HelmetPurpose,
+  HelmetShape,
   HelmetShellMaterial,
-  HelmetType,
   VisorPinlock,
 } from '../../enums';
 
@@ -63,12 +64,19 @@ export class FilterHelmetVariantsDto extends PaginationDto {
   @IsString()
   brandSlug?: string;
 
-  @ApiPropertyOptional({ enum: HelmetType, isArray: true })
+  @ApiPropertyOptional({ enum: HelmetShape, isArray: true })
   @IsOptional()
   @IsArray()
-  @IsEnum(HelmetType, { each: true })
+  @IsEnum(HelmetShape, { each: true })
   @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
-  type?: HelmetType[];
+  shape?: HelmetShape[];
+
+  @ApiPropertyOptional({ enum: HelmetPurpose, isArray: true })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(HelmetPurpose, { each: true })
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  purpose?: HelmetPurpose[];
 
   @ApiPropertyOptional({ enum: HelmetShellMaterial, isArray: true })
   @IsOptional()

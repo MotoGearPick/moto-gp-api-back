@@ -7,7 +7,8 @@ import {
   IsString,
   Min,
 } from 'class-validator';
-import { HelmetType } from '../../gear/helmets/enums';
+import { HelmetShape } from '../../gear/helmets/enums';
+import { HelmetPurpose } from '../../gear/helmets/enums';
 import { HelmetShellMaterial } from '../../gear/helmets/enums';
 import { VisorPinlock } from '../../gear/helmets/enums';
 import { HelmetClosureType } from '../../gear/helmets/enums';
@@ -24,8 +25,12 @@ export class ScrapedModelDataDto {
   brandSlug: string;
 
   @IsArray()
-  @IsEnum(HelmetType, { each: true })
-  helmetType: HelmetType[];
+  @IsEnum(HelmetShape, { each: true })
+  helmetShape: HelmetShape[];
+
+  @IsArray()
+  @IsEnum(HelmetPurpose, { each: true })
+  helmetPurpose: HelmetPurpose[];
 
   @IsOptional()
   @IsInt()

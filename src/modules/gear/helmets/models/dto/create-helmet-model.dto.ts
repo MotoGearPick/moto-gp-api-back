@@ -11,8 +11,9 @@ import {
 import {
   HelmetCertification,
   HelmetClosureType,
+  HelmetPurpose,
+  HelmetShape,
   HelmetShellMaterial,
-  HelmetType,
   VisorPinlock,
 } from '../../enums';
 
@@ -27,9 +28,14 @@ export class CreateHelmetModelDto {
   brandId: string;
 
   @IsArray()
-  @IsEnum(HelmetType, { each: true })
+  @IsEnum(HelmetShape, { each: true })
   @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
-  helmetType: HelmetType[];
+  helmetShape: HelmetShape[];
+
+  @IsArray()
+  @IsEnum(HelmetPurpose, { each: true })
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  helmetPurpose: HelmetPurpose[];
 
   @IsOptional()
   @IsInt()

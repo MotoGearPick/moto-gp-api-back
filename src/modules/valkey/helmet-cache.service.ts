@@ -13,7 +13,8 @@ export interface CachedCatalogItem {
   slug: string;
   name: string;
   brand: { id: string; name: string; slug: string };
-  type: string[];
+  shape: string[];
+  purpose: string[];
   safetyRating: number | null;
   shellMaterial: string[];
   shellSizes: number | null;
@@ -198,7 +199,8 @@ export class HelmetCacheService {
       slug: raw.slug,
       name: raw.name,
       brand: raw.brand,
-      type: raw.helmet_type ?? [],
+      shape: raw.helmet_shape ?? [],
+      purpose: raw.helmet_purpose ?? [],
       safetyRating: raw.safety_rating,
       shellMaterial: raw.shell_material ?? [],
       shellSizes: raw.shell_sizes,
@@ -242,7 +244,8 @@ export class HelmetCacheService {
       slug: raw.slug,
       name: raw.name,
       brand: raw.brand,
-      type: raw.helmet_type ?? [],
+      shape: raw.helmet_shape ?? [],
+      purpose: raw.helmet_purpose ?? [],
       safetyRating: raw.safety_rating,
       shellMaterial: raw.shell_material ?? [],
       shellSizes: raw.shell_sizes,

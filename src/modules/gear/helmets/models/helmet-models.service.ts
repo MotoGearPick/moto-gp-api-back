@@ -38,7 +38,8 @@ export class HelmetModelsService {
   private filterCatalog(catalog: CachedCatalogItem[], filters: FilterHelmetModelsDto): CachedCatalogItem[] {
     return catalog.filter((item) => {
       if (filters.brandSlug && item.brand.slug !== filters.brandSlug) return false;
-      if (filters.type?.length && !filters.type.some((t) => item.type.includes(t))) return false;
+      if (filters.shape?.length && !filters.shape.some((s) => item.shape.includes(s))) return false;
+      if (filters.purpose?.length && !filters.purpose.some((p) => item.purpose.includes(p))) return false;
       if (filters.shellMaterial?.length && !filters.shellMaterial.some((m) => item.shellMaterial.includes(m))) return false;
       if (filters.closureType && item.features.closureType !== filters.closureType) return false;
       if (filters.visorPinlockCompatible?.length && !filters.visorPinlockCompatible.some((v) => item.features.visorPinlockCompatible.includes(v))) return false;
@@ -59,16 +60,20 @@ export class HelmetModelsService {
   }
 
   private hasVariantFilters(filters: FilterHelmetModelsDto): boolean {
-    return !!(filters.colorFamily?.length) || filters.mono === true || !!(filters.finish?.length);
+    return !!(filters.colorFamily?.length) || filters.exclusive === true || !!(filters.finish?.length);
   }
 
   private variantMatches(variant: CachedVariantFilter, filters: FilterHelmetModelsDto): boolean {
-    const { colorFamily, mono, finish } = filters;
+    const { colorFamily, exclusive, finish } = filters;
 
-    if (mono && colorFamily?.length) {
-      if (!colorFamily.some((c) => variant.colorFamilies.length === 1 && variant.colorFamilies[0] === c)) return false;
-    } else if (colorFamily?.length) {
-      if (!colorFamily.every((c) => variant.colorFamilies.includes(c))) return false;
+    if (colorFamily?.length) {
+      if (exclusive) {
+        const variantSet = new Set(variant.colorFamilies);
+        if (variantSet.size !== colorFamily.length) return false;
+        if (!colorFamily.every((c) => variantSet.has(c))) return false;
+      } else if (!colorFamily.every((c) => variant.colorFamilies.includes(c))) {
+        return false;
+      }
     }
 
     return !(finish?.length && !finish.includes(<HelmetFinish>variant.finish));
@@ -81,10 +86,18 @@ export class HelmetModelsService {
   private toListResponse(item: CachedCatalogItem, filters: FilterHelmetModelsDto) {
     const { _variants, ...rest } = item;
 
-    const variantImages = this.hasVariantFilters(filters)
-      ? item.variantImages.filter((_, i) => this.variantMatches(_variants[i], filters))
-      : item.variantImages;
+    if (!this.hasVariantFilters(filters)) {
+      return { ...rest, variantImages: item.variantImages };
+    }
 
-    return { ...rest, variantImages };
+    const matchingIndices = _variants
+      .map((v, i) => (this.variantMatches(v, filters) ? i : -1))
+      .filter((i) => i >= 0);
+
+    return {
+      ...rest,
+      variantsCount: matchingIndices.length,
+      variantImages: matchingIndices.map((i) => item.variantImages[i]),
+    };
   }
 }

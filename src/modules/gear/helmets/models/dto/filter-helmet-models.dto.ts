@@ -15,8 +15,9 @@ import {
   HelmetCertification,
   HelmetClosureType,
   HelmetFinish,
+  HelmetPurpose,
+  HelmetShape,
   HelmetShellMaterial,
-  HelmetType,
   VisorPinlock,
 } from '../../enums';
 
@@ -26,9 +27,15 @@ export class FilterHelmetModelsDto extends PaginationDto {
 
   @IsOptional()
   @IsArray()
-  @IsEnum(HelmetType, { each: true })
+  @IsEnum(HelmetShape, { each: true })
   @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
-  type?: HelmetType[];
+  shape?: HelmetShape[];
+
+  @IsOptional()
+  @IsArray()
+  @IsEnum(HelmetPurpose, { each: true })
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  purpose?: HelmetPurpose[];
 
   @IsOptional()
   @IsArray()
@@ -82,7 +89,7 @@ export class FilterHelmetModelsDto extends PaginationDto {
   @IsOptional()
   @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
-  mono?: boolean;
+  exclusive?: boolean;
 
   @IsOptional()
   @Transform(({ value }) => value === 'true' || value === true)
