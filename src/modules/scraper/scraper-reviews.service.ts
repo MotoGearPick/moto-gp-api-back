@@ -17,9 +17,9 @@ import {
   visor_pinlock,
 } from '@prisma/products-client';
 import {
-  PrismaClientKnownRequestError,
-  PrismaClientValidationError,
-} from '@prisma/products-client/runtime/client';
+  isPrismaKnownRequestError,
+  isPrismaValidationError,
+} from '../../common/prisma-errors';
 import { ProductsPrismaService } from '../../prisma/products-prisma.service';
 import { CdnImagesService } from '../cdn/cdn-images.service';
 import { FilterReviewsDto } from './dto';
@@ -691,7 +691,7 @@ export class ScraperReviewsService {
   }
 
   private handlePrismaError(err: unknown): never {
-    if (err instanceof PrismaClientValidationError) {
+    if (isPrismaValidationError(err)) {
       this.logger.error('PrismaClientValidationError', err.message);
       const match = err.message.match(/Invalid value for argument `(\w+)`[^.]*\. Expected (\S+)/);
       if (match) {
@@ -701,13 +701,13 @@ export class ScraperReviewsService {
       }
       throw new BadRequestException('Invalid data: ' + err.message.split('\n')[0]);
     }
-    if (err instanceof PrismaClientKnownRequestError) {
+    if (isPrismaKnownRequestError(err)) {
       this.logger.error(`PrismaClientKnownRequestError ${err.code}`, err.message);
       if (err.code === 'P2002') {
         throw new ConflictException(`Unique constraint violation: ${err.meta?.target}`);
       }
       if (err.code === 'P2025') {
-        throw new NotFoundException(err.meta?.cause as string ?? 'Record not found');
+        throw new NotFoundException((err.meta?.cause as string) ?? 'Record not found');
       }
       throw new BadRequestException(`Database error ${err.code}: ${err.message}`);
     }
