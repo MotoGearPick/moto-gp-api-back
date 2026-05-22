@@ -32,7 +32,9 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, document);
-  writeFileSync('./swagger-spec.json', JSON.stringify(document, null, 2));
+  if (env.APP_ENV === 'local') {
+    writeFileSync('./swagger-spec.json', JSON.stringify(document, null, 2));
+  }
 
   const port = env.PORT;
   await app.listen(port);
