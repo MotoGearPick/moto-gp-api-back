@@ -49,6 +49,7 @@
     "@nestjs/throttler": "^6.5.0",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.5.0",
+    "@prisma/client-runtime-utils": "^7.4.2",
     "@sentry/nestjs": "^10.52.0",
     "@types/multer": "^2.1.0",
     "bcrypt": "^6.0.0",
