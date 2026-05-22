@@ -16,6 +16,10 @@ import {
   helmet_shell_material,
   visor_pinlock,
 } from '@prisma/products-client';
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientValidationError,
+} from '@prisma/products-client/runtime/client';
 import { ProductsPrismaService } from '../../prisma/products-prisma.service';
 import { CdnImagesService } from '../cdn/cdn-images.service';
 import { FilterReviewsDto } from './dto';
@@ -687,7 +691,7 @@ export class ScraperReviewsService {
   }
 
   private handlePrismaError(err: unknown): never {
-    if (err instanceof Prisma.PrismaClientValidationError) {
+    if (err instanceof PrismaClientValidationError) {
       this.logger.error('PrismaClientValidationError', err.message);
       const match = err.message.match(/Invalid value for argument `(\w+)`[^.]*\. Expected (\S+)/);
       if (match) {
@@ -697,7 +701,7 @@ export class ScraperReviewsService {
       }
       throw new BadRequestException('Invalid data: ' + err.message.split('\n')[0]);
     }
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err instanceof PrismaClientKnownRequestError) {
       this.logger.error(`PrismaClientKnownRequestError ${err.code}`, err.message);
       if (err.code === 'P2002') {
         throw new ConflictException(`Unique constraint violation: ${err.meta?.target}`);

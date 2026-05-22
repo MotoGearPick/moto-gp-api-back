@@ -1,6 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { ProductsPrismaService } from '../../../prisma/products-prisma.service';
 import { BrandCacheService } from '../../valkey/brand-cache.service';
+import { SearchSyncService } from '../../search/search-sync.service';
 import { GearType } from '../common/enums/gear-type.enum';
 import { CreateBrandDto } from './dto/create-brand.dto';
 
@@ -9,6 +10,7 @@ export class BrandsService {
   constructor(
     private readonly db: ProductsPrismaService,
     private readonly brandCache: BrandCacheService,
+    private readonly searchSync: SearchSyncService,
   ) {}
 
   async create(dto: CreateBrandDto) {
@@ -29,6 +31,7 @@ export class BrandsService {
     });
 
     await this.brandCache.reload();
+    await this.searchSync.upsertBrand(result.id);
     return result;
   }
 

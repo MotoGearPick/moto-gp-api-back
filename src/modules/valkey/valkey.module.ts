@@ -16,9 +16,9 @@ const valkeyLogger = new Logger('ValkeyClient');
     {
       provide: VALKEY_CLIENT,
       useFactory: () => {
-        const client = new Valkey(VALKEY_URL(), {
-          tls: { rejectUnauthorized: false },
-        });
+        const url = VALKEY_URL();
+        const useTls = url.startsWith('rediss://');
+        const client = new Valkey(url, useTls ? { tls: { rejectUnauthorized: false } } : {});
         client.on('error', (err: Error) => valkeyLogger.error(err.message, err.stack));
         return client;
       },

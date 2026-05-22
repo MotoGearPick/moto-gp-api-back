@@ -11,6 +11,7 @@ import {
 import { paginate } from '../../../../common/pagination';
 import { ProductsPrismaService } from '../../../../prisma/products-prisma.service';
 import { HelmetCacheService } from '../../../valkey/helmet-cache.service';
+import { SearchSyncService } from '../../../search/search-sync.service';
 import { CreateHelmetModelDto } from './dto/create-helmet-model.dto';
 import { UpdateHelmetModelDto } from './dto/update-helmet-model.dto';
 import { FilterHelmetModelsAdminDto } from './dto/filter-helmet-models-admin.dto';
@@ -20,6 +21,7 @@ export class HelmetModelsAdminService {
   constructor(
     private readonly db: ProductsPrismaService,
     private readonly cache: HelmetCacheService,
+    private readonly searchSync: SearchSyncService,
   ) {}
 
   async findAll(filters: FilterHelmetModelsAdminDto) {
@@ -84,6 +86,7 @@ export class HelmetModelsAdminService {
     });
 
     await this.cache.invalidateHelmet(item.id);
+    await this.searchSync.upsertModel(item.id);
     return this.mapDetail(item);
   }
 
@@ -125,6 +128,7 @@ export class HelmetModelsAdminService {
     });
 
     await this.cache.invalidateHelmet(id);
+    await this.searchSync.upsertModel(id);
     return this.mapDetail(item);
   }
 
@@ -135,6 +139,7 @@ export class HelmetModelsAdminService {
       data: { deleted_at: new Date() },
     });
     await this.cache.invalidateHelmet(id);
+    await this.searchSync.upsertModel(id);
   }
 
   async restore(id: string) {
@@ -148,6 +153,7 @@ export class HelmetModelsAdminService {
     });
 
     await this.cache.invalidateHelmet(id);
+    await this.searchSync.upsertModel(id);
     return this.mapDetail(restored);
   }
 

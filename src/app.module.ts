@@ -13,6 +13,7 @@ import { ContactModule } from './modules/contact/contact.module';
 import { SecurityModule } from './modules/security/security.module';
 import { ValkeyModule } from './modules/valkey/valkey.module';
 import { HealthModule } from './modules/health/health.module';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { HealthModule } from './modules/health/health.module';
     LoggerModule,
     S3Module,
     ValkeyModule,
+    SearchModule,
     GearModule,
     AuthModule,
     BackupModule,

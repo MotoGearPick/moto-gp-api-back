@@ -137,3 +137,7 @@ swagger-spec.json
 dist/prisma
 
 CLAUDE.md
+
+# Database dumps
+*.dump
+*.sql.gz

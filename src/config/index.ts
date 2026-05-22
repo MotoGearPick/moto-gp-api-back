@@ -30,6 +30,10 @@ export interface AppConfig {
   RESEND_API_KEY: string;
 
   SENTRY_DSN: string | undefined;
+
+  MEILI_HOST: string;
+  MEILI_API_KEY: string;
+  MEILI_INDEX: string;
 }
 
 export const config = (): AppConfig => ({
@@ -62,4 +66,8 @@ export const config = (): AppConfig => ({
   RESEND_API_KEY: requireEnv('RESEND_API_KEY'),
 
   SENTRY_DSN: optionalEnv('SENTRY_DSN'),
+
+  MEILI_HOST: requireEnv('MEILI_HOST'),
+  MEILI_API_KEY: requireEnv('MEILI_API_KEY'),
+  MEILI_INDEX: optionalEnv('MEILI_INDEX', 'helmets'),
 });

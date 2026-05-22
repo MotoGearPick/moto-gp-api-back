@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProductsPrismaService } from '../../../../prisma/products-prisma.service';
 import { HelmetCacheService } from '../../../valkey/helmet-cache.service';
+import { SearchSyncService } from '../../../search/search-sync.service';
 import { CreateHelmetInventoryDto } from './dto/create-helmet-inventory.dto';
 import { UpdateHelmetInventoryDto } from './dto/update-helmet-inventory.dto';
 
@@ -9,6 +10,7 @@ export class HelmetInventoryService {
   constructor(
     private readonly db: ProductsPrismaService,
     private readonly cache: HelmetCacheService,
+    private readonly searchSync: SearchSyncService,
   ) {}
 
   async create(dto: CreateHelmetInventoryDto) {
@@ -28,6 +30,7 @@ export class HelmetInventoryService {
       },
     });
     await this.cache.reload();
+    await this.searchSync.upsertVariant(dto.variantId);
     return result;
   }
 
@@ -53,17 +56,20 @@ export class HelmetInventoryService {
       },
     });
     await this.cache.reload();
+    await this.searchSync.upsertVariant(result.variant_id);
     return result;
   }
 
   async remove(id: string) {
-    await this.assertExists(id);
+    const existing = await this.assertExists(id);
     await this.db.helmet_inventory.delete({ where: { id } });
     await this.cache.reload();
+    await this.searchSync.upsertVariant(existing.variant_id);
   }
 
   private async assertExists(id: string) {
     const item = await this.db.helmet_inventory.findUnique({ where: { id } });
     if (!item) throw new NotFoundException(`Inventory entry #${id} not found`);
+    return item;
   }
 }

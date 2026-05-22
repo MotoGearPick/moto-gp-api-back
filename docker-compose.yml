@@ -35,6 +35,19 @@ services:
     volumes:
       - valkey_data:/data
 
+  meilisearch:
+    image: getmeili/meilisearch:v1.11
+    container_name: moto-gear-meili
+    restart: always
+    environment:
+      MEILI_MASTER_KEY: localMasterKey
+      MEILI_ENV: development
+      MEILI_NO_ANALYTICS: 'true'
+    ports:
+      - '7700:7700'
+    volumes:
+      - meili_data:/meili_data
+
   localstack:
     image: localstack/localstack:latest
     container_name: moto-gear-localstack
@@ -69,6 +82,7 @@ volumes:
   db_products_data:
   valkey_data:
   localstack_data:
+  meili_data:
 
 networks:
   default:
