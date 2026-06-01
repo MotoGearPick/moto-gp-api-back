@@ -176,6 +176,8 @@ model BedrockBatchJob {
   failureReason String?            @map("failure_reason")
   createdAt     DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
   completedAt   DateTime?          @map("completed_at") @db.Timestamptz(6)
+  brand_slug    String             @db.VarChar(100)
+  source        String             @db.VarChar(100)
   items         BedrockBatchItem[]
 
   @@index([status])
@@ -183,16 +185,19 @@ model BedrockBatchJob {
 }
 
 model BedrockBatchItem {
-  id        String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  jobId     String          @map("job_id") @db.Uuid
-  recordId  String          @map("record_id") @db.VarChar(100)
-  url       String
-  colorHint String?         @map("color_hint")
-  status    String          @default("Pending") @db.VarChar(50)
-  result    Json?
-  error     String?
-  createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
-  job       BedrockBatchJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  id           String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jobId        String          @map("job_id") @db.Uuid
+  recordId     String          @map("record_id") @db.VarChar(100)
+  url          String
+  colorHint    String?         @map("color_hint")
+  status       String          @default("Pending") @db.VarChar(50)
+  result       Json?
+  error        String?
+  createdAt    DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  cleaned_html String?         @db.Text
+  source_url   String?
+  image_urls   String[]        @default([])
+  job          BedrockBatchJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@unique([jobId, recordId])
   @@index([jobId])
