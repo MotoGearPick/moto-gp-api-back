@@ -8,14 +8,22 @@ import {
   Param,
   Post,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { ApiBody, ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { AuthAdminService } from '../services/auth.admin.service';
 import { LoginAdminDto } from '../dto';
 import { RegisterAdminDto } from '../dto';
-import { AdminAccessTokenGuard, LoginGuard } from '../guards';
+import { AdminAccessTokenGuard, AdminRefreshTokenGuard, LoginGuard } from '../guards';
+import { UserId } from '../../../common/decorators';
+import {
+  ADMIN_REFRESH_COOKIE,
+  clearRefreshCookieOptions,
+  refreshCookieOptions,
+} from '../cookies';
 
 @SkipThrottle()
 @ApiTags('Admin — Auth')
@@ -30,11 +38,41 @@ export class AuthAdminController {
   @UseGuards(LoginGuard)
   @ApiOperation({ summary: '[Admin] Iniciar sesión' })
   @ApiBody({ type: LoginAdminDto })
-  @ApiResponse({ status: 200, description: 'Login exitoso, retorna el token de acceso' })
+  @ApiResponse({ status: 200, description: 'Login exitoso. Retorna accessToken; el refreshToken se setea en cookie httpOnly' })
   @ApiResponse({ status: 401, description: 'Credenciales inválidas' })
-  async login(@Request() req: any) {
-    const tokens = await this.service.generateTokens(req.user);
-    return { ...tokens };
+  async login(
+    @Request() req: any,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken, refreshToken } = await this.service.generateTokens(req.user);
+    res.cookie(ADMIN_REFRESH_COOKIE, refreshToken, refreshCookieOptions());
+    return { accessToken };
+  }
+
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AdminRefreshTokenGuard)
+  @ApiOperation({ summary: '[Admin] Refrescar el access token usando la cookie de refresh' })
+  @ApiResponse({ status: 200, description: 'Nuevo accessToken; rota la cookie de refresh' })
+  @ApiResponse({ status: 401, description: 'Refresh token inválido o expirado' })
+  @ApiResponse({ status: 404, description: 'Admin no encontrado' })
+  async refresh(
+    @UserId() id: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken, refreshToken } = await this.service.refreshTokens(id);
+    res.cookie(ADMIN_REFRESH_COOKIE, refreshToken, refreshCookieOptions());
+    return { accessToken };
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AdminAccessTokenGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '[Admin] Cerrar sesión (limpia la cookie de refresh)' })
+  @ApiResponse({ status: 204, description: 'Sesión cerrada' })
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie(ADMIN_REFRESH_COOKIE, clearRefreshCookieOptions());
   }
 
   @Post('register')

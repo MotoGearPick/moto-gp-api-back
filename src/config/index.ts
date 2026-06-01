@@ -5,6 +5,7 @@ export interface AppConfig {
   APP_ENV: string;
   APP_URL: string;
   CORS_URLS: string;
+  COOKIE_DOMAIN: string;
   PUBLIC_API_KEY: string;
 
   APP_DATABASE_URL: string;
@@ -41,6 +42,7 @@ export const config = (): AppConfig => ({
   APP_ENV: requireEnv('APP_ENV'),
   APP_URL: requireEnv('APP_URL'),
   CORS_URLS: optionalEnv('CORS_URLS', ''),
+  COOKIE_DOMAIN: optionalEnv('COOKIE_DOMAIN', ''),
   PUBLIC_API_KEY: requireEnv('PUBLIC_API_KEY'),
 
   APP_DATABASE_URL: requireEnv('APP_DATABASE_URL'),

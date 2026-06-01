@@ -1,4 +1,4 @@
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { AuthAdminService } from './auth.admin.service';
 
 describe('AuthAdminService', () => {
@@ -19,6 +19,8 @@ describe('AuthAdminService', () => {
     process.env.S3_BUCKET = 'x';
     process.env.S3_ENDPOINT = 'http://localhost';
     process.env.RESEND_API_KEY = 'x';
+    process.env.MEILI_HOST = 'http://localhost';
+    process.env.MEILI_API_KEY = 'x';
   });
 
   afterAll(() => {
@@ -51,6 +53,30 @@ describe('AuthAdminService', () => {
     expect(calls[1][1].expiresIn).toBeDefined();
     expect(tokens.accessToken).toContain('access');
     expect(tokens.refreshToken).toContain('refresh');
+  });
+
+  it('refreshes tokens when the admin still exists', async () => {
+    const { service, repo, jwt } = makeService({
+      findByIdOrFail: jest.fn().mockResolvedValue({ id: 'u1' }),
+    });
+
+    const tokens = await service.refreshTokens('u1');
+
+    expect(repo.findByIdOrFail).toHaveBeenCalledWith('u1');
+    expect(jwt.signAsync).toHaveBeenCalledTimes(2);
+    expect(tokens.accessToken).toContain('access');
+    expect(tokens.refreshToken).toContain('refresh');
+  });
+
+  it('rejects refresh when the admin no longer exists', async () => {
+    const { service, jwt } = makeService({
+      findByIdOrFail: jest.fn().mockRejectedValue(new NotFoundException()),
+    });
+
+    await expect(service.refreshTokens('missing')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(jwt.signAsync).not.toHaveBeenCalled();
   });
 
   it('rejects registration when email already exists', async () => {

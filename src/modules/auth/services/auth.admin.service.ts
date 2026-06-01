@@ -22,6 +22,12 @@ export class AuthAdminService {
     return { accessToken, refreshToken };
   }
 
+  async refreshTokens(id: string) {
+    // El admin pudo haber sido eliminado después de emitir el refresh token.
+    await this.authRepository.findByIdOrFail(id);
+    return this.generateTokens({ id });
+  }
+
   private getAccessToken(id: string): Promise<string> {
     const opts: JwtSignOptions = {
       secret: config().JWT_ADMIN_ACCESS_SECRET,
