@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
-import { Admin } from '@prisma/app-client';
+import { Admin, AdminRole } from '@prisma/app-client';
 import * as bcrypt from 'bcrypt';
 import { config } from '../../../config';
 import { AuthRepository } from '../repositories/auth.repository';
@@ -13,10 +13,10 @@ export class AuthAdminService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async generateTokens(admin: { id: string }) {
+  async generateTokens(admin: { id: string; role: AdminRole }) {
     const [accessToken, refreshToken] = await Promise.all([
-      this.getAccessToken(admin.id),
-      this.getRefreshToken(admin.id),
+      this.getAccessToken(admin),
+      this.getRefreshToken(admin),
     ]);
 
     return { accessToken, refreshToken };
@@ -24,24 +24,25 @@ export class AuthAdminService {
 
   async refreshTokens(id: string) {
     // El admin pudo haber sido eliminado después de emitir el refresh token.
-    await this.authRepository.findByIdOrFail(id);
-    return this.generateTokens({ id });
+    // Re-read the role so permission changes take effect on refresh.
+    const admin = await this.authRepository.findByIdOrFail(id);
+    return this.generateTokens({ id, role: admin.role });
   }
 
-  private getAccessToken(id: string): Promise<string> {
+  private getAccessToken(admin: { id: string; role: AdminRole }): Promise<string> {
     const opts: JwtSignOptions = {
       secret: config().JWT_ADMIN_ACCESS_SECRET,
       expiresIn: config().JWT_ADMIN_ACCESS_EXPIRES as unknown as number,
     };
-    return this.jwtService.signAsync({ id }, opts);
+    return this.jwtService.signAsync({ id: admin.id, role: admin.role }, opts);
   }
 
-  private getRefreshToken(id: string): Promise<string> {
+  private getRefreshToken(admin: { id: string; role: AdminRole }): Promise<string> {
     const opts: JwtSignOptions = {
       secret: config().JWT_ADMIN_REFRESH_SECRET,
       expiresIn: config().JWT_ADMIN_REFRESH_EXPIRES as unknown as number,
     };
-    return this.jwtService.signAsync({ id }, opts);
+    return this.jwtService.signAsync({ id: admin.id, role: admin.role }, opts);
   }
 
   async register(dto: RegisterAdminDto) {
@@ -54,6 +55,7 @@ export class AuthAdminService {
       name: dto.name,
       email: dto.email,
       passwordHash,
+      role: dto.role ?? AdminRole.superadmin,
     });
 
     return { admin: this.mapAdmin(admin) };
@@ -79,6 +81,7 @@ export class AuthAdminService {
       id: admin.id,
       name: admin.name,
       email: admin.email,
+      role: admin.role,
       createdAt: admin.createdAt,
       updatedAt: admin.updatedAt,
     };

@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { AdminRole } from '@prisma/app-client';
 import { AppPrismaService } from '../../../prisma/app-prisma.service';
 
 @Injectable()
@@ -23,7 +24,12 @@ export class AuthRepository {
     return this.db.admin.findMany({ orderBy: { createdAt: 'desc' } });
   }
 
-  create(data: { name: string; email: string; passwordHash: string }) {
+  create(data: {
+    name: string;
+    email: string;
+    passwordHash: string;
+    role?: AdminRole;
+  }) {
     return this.db.admin.create({ data });
   }
 

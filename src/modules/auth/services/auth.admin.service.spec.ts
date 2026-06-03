@@ -45,7 +45,7 @@ describe('AuthAdminService', () => {
 
   it('issues access + refresh tokens with configured expirations', async () => {
     const { service, jwt } = makeService();
-    const tokens = await service.generateTokens({ id: 'u1' });
+    const tokens = await service.generateTokens({ id: 'u1', role: 'superadmin' });
 
     expect(jwt.signAsync).toHaveBeenCalledTimes(2);
     const calls = jwt.signAsync.mock.calls;

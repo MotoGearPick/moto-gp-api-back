@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { AdminRole } from '@prisma/app-client';
+import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class RegisterAdminDto {
   @ApiProperty({ example: 'John Doe' })
@@ -14,4 +15,14 @@ export class RegisterAdminDto {
   @IsString()
   @MinLength(8)
   password: string;
+
+  @ApiProperty({
+    enum: AdminRole,
+    required: false,
+    default: AdminRole.superadmin,
+    description: 'Rol del admin.',
+  })
+  @IsOptional()
+  @IsEnum(AdminRole)
+  role?: AdminRole;
 }

@@ -21,12 +21,18 @@ model User {
 }
 
 model Admin {
-  id           String   @id @default(uuid())
+  id           String    @id @default(uuid())
   name         String
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         AdminRole @default(superadmin)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@map("admins")
+}
+
+enum AdminRole {
+  superadmin
+  variant_reviewer
 }

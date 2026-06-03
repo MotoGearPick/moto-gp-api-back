@@ -14,10 +14,17 @@ import {
 import { Response } from 'express';
 import { ApiBody, ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import { AdminRole } from '@prisma/app-client';
 import { AuthAdminService } from '../services/auth.admin.service';
 import { LoginAdminDto } from '../dto';
 import { RegisterAdminDto } from '../dto';
-import { AdminAccessTokenGuard, AdminRefreshTokenGuard, LoginGuard } from '../guards';
+import {
+  AdminAccessTokenGuard,
+  AdminRefreshTokenGuard,
+  LoginGuard,
+  RolesGuard,
+} from '../guards';
+import { Roles } from '../decorators/roles.decorator';
 import { UserId } from '../../../common/decorators';
 import {
   ADMIN_REFRESH_COOKIE,
@@ -75,8 +82,19 @@ export class AuthAdminController {
     res.clearCookie(ADMIN_REFRESH_COOKIE, clearRefreshCookieOptions());
   }
 
-  @Post('register')
+  @Get('me')
   @UseGuards(AdminAccessTokenGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '[Admin] Perfil del admin autenticado (incluye rol)' })
+  @ApiResponse({ status: 200, description: 'Perfil del admin actual' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  me(@UserId() id: string) {
+    return this.service.findOne(id);
+  }
+
+  @Post('register')
+  @UseGuards(AdminAccessTokenGuard, RolesGuard)
+  @Roles(AdminRole.superadmin)
   @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Registrar nuevo usuario admin' })
   @ApiBody({ type: RegisterAdminDto })
@@ -88,7 +106,8 @@ export class AuthAdminController {
   }
 
   @Get('users')
-  @UseGuards(AdminAccessTokenGuard)
+  @UseGuards(AdminAccessTokenGuard, RolesGuard)
+  @Roles(AdminRole.superadmin)
   @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Listar todos los usuarios' })
   @ApiResponse({ status: 200, description: 'Lista de usuarios' })
@@ -98,7 +117,8 @@ export class AuthAdminController {
   }
 
   @Get('users/:id')
-  @UseGuards(AdminAccessTokenGuard)
+  @UseGuards(AdminAccessTokenGuard, RolesGuard)
+  @Roles(AdminRole.superadmin)
   @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Obtener usuario por ID' })
   @ApiParam({ name: 'id', description: 'UUID del usuario' })
@@ -111,7 +131,8 @@ export class AuthAdminController {
 
   @Delete('users/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(AdminAccessTokenGuard)
+  @UseGuards(AdminAccessTokenGuard, RolesGuard)
+  @Roles(AdminRole.superadmin)
   @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Eliminar usuario' })
   @ApiParam({ name: 'id', description: 'UUID del usuario' })

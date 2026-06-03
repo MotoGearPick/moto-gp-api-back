@@ -1,7 +1,9 @@
 import { Request } from 'express';
+import { AdminRole } from '@prisma/app-client';
 
 export type JwtPayload = {
   id: string;
+  role: AdminRole;
 };
 
 export type ResetJwtPayload = {
