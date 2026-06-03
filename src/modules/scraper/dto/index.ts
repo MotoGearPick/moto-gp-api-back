@@ -2,5 +2,8 @@ export * from './scraped-model-data.dto';
 export * from './scraped-variant-data.dto';
 export * from './filter-reviews.dto';
 export * from './update-review.dto';
+export * from './update-variant-data.dto';
 export * from './edit-group-model.dto';
 export * from './batch-action.dto';
+export * from './review-variant.dto';
+export * from './filter-variant-reviews.dto';

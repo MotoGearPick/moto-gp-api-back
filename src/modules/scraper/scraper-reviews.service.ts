@@ -138,6 +138,12 @@ export class ScraperReviewsService {
       sourceUrl: review.source_url,
       source: review.source,
       status: review.status,
+      variantReviewStatus: review.variant_review_status,
+      variantReviewedAt: review.variant_reviewed_at,
+      variantReviewedBy: review.variant_reviewed_by,
+      modelReviewStatus: review.model_review_status,
+      modelReviewedAt: review.model_reviewed_at,
+      modelReviewedBy: review.model_reviewed_by,
       sourceContent: review.source_content,
       rawModelData: modelData,
       rawVariantData: variantData,
@@ -203,16 +209,26 @@ export class ScraperReviewsService {
       const mergedModelData = this.mergeModelData(reviews);
       const editedModelData = this.getGroupEditedModelData(reviews);
 
+      // Model review is a group-level track: reviewed only when every row agrees.
+      const modelReviewStatus = reviews.every(
+        (r) => r.model_review_status === 'reviewed',
+      )
+        ? 'reviewed'
+        : 'pending';
+
       return {
         modelSlug: slug,
         modelName: mergedModelData.modelName,
         modelData: mergedModelData,
         editedModelData,
+        modelReviewStatus,
         variants: reviews.map((r) => {
           const { variantData } = this.extractData(r);
           return {
             reviewId: r.id,
             status: r.status,
+            variantReviewStatus: r.variant_review_status,
+            variantReviewedAt: r.variant_reviewed_at,
             sourceUrl: r.source_url,
             variantData,
             editedVariantData: (r.edited_variant_data as ScrapedVariantData) ?? null,
@@ -345,6 +361,8 @@ export class ScraperReviewsService {
     const review = await this.prisma.scrape_review.findUnique({ where: { id } });
     if (!review) throw new NotFoundException('Review not found');
 
+    this.assertReviewedBeforeApproval([review]);
+
     await this.persistToHelmetTables(review);
 
     const updated = await this.prisma.scrape_review.update({
@@ -382,6 +400,7 @@ export class ScraperReviewsService {
       toApprove = groupReviews.filter((r) => r.status === 'pending');
     }
 
+    this.assertReviewedBeforeApproval(toApprove);
     this.verifyModelDataConsistency(toApprove);
 
     // Single transaction for the entire batch
@@ -713,6 +732,68 @@ export class ScraperReviewsService {
     }
     this.logger.error('Unexpected error in database operation', err);
     throw err;
+  }
+
+  /**
+   * Both review tracks must be 'reviewed' before a variant can be approved:
+   * the variant data (color/graphic/finish) and the shared model data.
+   */
+  private assertReviewedBeforeApproval(reviews: any[]) {
+    const variantPending = reviews.filter(
+      (r) => r.variant_review_status !== 'reviewed',
+    );
+    const modelPending = reviews.filter(
+      (r) => r.model_review_status !== 'reviewed',
+    );
+
+    if (variantPending.length > 0 || modelPending.length > 0) {
+      const parts: string[] = [];
+      if (modelPending.length > 0) parts.push('model data');
+      if (variantPending.length > 0) {
+        parts.push(`${variantPending.length} variant(s)`);
+      }
+      throw new BadRequestException(
+        `Cannot approve: pending review for ${parts.join(' and ')}. Both model and variant must be marked as reviewed first.`,
+      );
+    }
+  }
+
+  /** Marks the shared model data of a whole group as reviewed. */
+  async markGroupModelReviewed(modelSlug: string, adminId: string) {
+    const groupReviews = await this.findReviewsByModelSlug(modelSlug);
+    if (groupReviews.length === 0) {
+      throw new NotFoundException(`No reviews found for model slug: ${modelSlug}`);
+    }
+
+    await this.prisma.scrape_review.updateMany({
+      where: { id: { in: groupReviews.map((r) => r.id) } },
+      data: {
+        model_review_status: 'reviewed',
+        model_reviewed_at: new Date(),
+        model_reviewed_by: adminId,
+      },
+    });
+
+    return { updated: groupReviews.length, modelReviewStatus: 'reviewed' };
+  }
+
+  /** Reverts the shared model data of a whole group to pending review. */
+  async unmarkGroupModelReviewed(modelSlug: string) {
+    const groupReviews = await this.findReviewsByModelSlug(modelSlug);
+    if (groupReviews.length === 0) {
+      throw new NotFoundException(`No reviews found for model slug: ${modelSlug}`);
+    }
+
+    await this.prisma.scrape_review.updateMany({
+      where: { id: { in: groupReviews.map((r) => r.id) } },
+      data: {
+        model_review_status: 'pending',
+        model_reviewed_at: null,
+        model_reviewed_by: null,
+      },
+    });
+
+    return { updated: groupReviews.length, modelReviewStatus: 'pending' };
   }
 
   private verifyModelDataConsistency(reviews: any[]) {

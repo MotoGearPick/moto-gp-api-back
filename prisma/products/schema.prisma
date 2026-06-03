@@ -126,7 +126,20 @@ model scrape_review {
   reviewed_at         DateTime?     @db.Timestamptz(6)
   source_content      String?
 
+  // Variant-level review (color/graphic/finish) — independent of the approval status above
+  variant_review_status review_check_status @default(pending)
+  variant_reviewed_at   DateTime?           @db.Timestamptz(6)
+  variant_reviewed_by   String?             @db.Uuid
+
+  // Model-level review (shared model data) — independent track; both must be
+  // reviewed before a variant can be approved.
+  model_review_status review_check_status @default(pending)
+  model_reviewed_at   DateTime?           @db.Timestamptz(6)
+  model_reviewed_by   String?             @db.Uuid
+
   @@index([status])
+  @@index([variant_review_status])
+  @@index([model_review_status])
 }
 
 model helmet_model_size {
@@ -275,6 +288,11 @@ enum review_status {
   pending
   approved
   rejected
+}
+
+enum review_check_status {
+  pending
+  reviewed
 }
 
 enum visor_pinlock {
