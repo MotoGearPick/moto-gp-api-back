@@ -22,6 +22,8 @@ import {
 } from '../../common/prisma-errors';
 import { ProductsPrismaService } from '../../prisma/products-prisma.service';
 import { CdnImagesService } from '../cdn/cdn-images.service';
+import { HelmetCacheService } from '../valkey/helmet-cache.service';
+import { SearchSyncService } from '../search/search-sync.service';
 import { FilterReviewsDto } from './dto';
 import { UpdateReviewDto } from './dto';
 import { ScrapedModelDataDto } from './dto';
@@ -35,6 +37,8 @@ export class ScraperReviewsService {
   constructor(
     private readonly prisma: ProductsPrismaService,
     private readonly cdnImages: CdnImagesService,
+    private readonly cache: HelmetCacheService,
+    private readonly searchSync: SearchSyncService,
   ) {}
 
   /**
@@ -363,12 +367,15 @@ export class ScraperReviewsService {
 
     this.assertReviewedBeforeApproval([review]);
 
-    await this.persistToHelmetTables(review);
+    const modelId = await this.persistToHelmetTables(review);
 
     const updated = await this.prisma.scrape_review.update({
       where: { id },
       data: { status: 'approved', reviewed_at: new Date() },
     });
+
+    await this.refreshDownstream(modelId);
+
     return this.mapReviewResponse(updated);
   }
 
@@ -404,8 +411,9 @@ export class ScraperReviewsService {
     this.verifyModelDataConsistency(toApprove);
 
     // Single transaction for the entire batch
+    let modelId: string;
     try {
-      await this.prisma.$transaction(async (tx) => {
+      modelId = await this.prisma.$transaction(async (tx) => {
       // All reviews share the same model — upsert brand and model once
       const { modelData } = this.getResolvedData(toApprove[0]);
       const brandSlug = modelData.brandSlug;
@@ -507,10 +515,14 @@ export class ScraperReviewsService {
       this.logger.log(
         `Batch approved ${toApprove.length} variants for model="${modelData.modelName}"`,
       );
+
+      return model.id;
     });
     } catch (err) {
       this.handlePrismaError(err);
     }
+
+    await this.refreshDownstream(modelId);
 
     return { approved: toApprove.length };
   }
@@ -588,8 +600,9 @@ export class ScraperReviewsService {
   /**
    * Persist a review's data to helmet_model, helmet_model_variant, and helmet_model_size tables.
    * Images are downloaded, converted to WebP at all sizes, and uploaded to S3 before DB update.
+   * Returns the id of the affected helmet_model so callers can refresh cache / search index.
    */
-  private async persistToHelmetTables(review: any): Promise<void> {
+  private async persistToHelmetTables(review: any): Promise<string> {
     const { modelData, variantData } = this.getResolvedData(review);
     const brandSlug = modelData.brandSlug;
     const brandName = brandSlug.charAt(0).toUpperCase() + brandSlug.slice(1);
@@ -598,7 +611,7 @@ export class ScraperReviewsService {
       // Step 1: Upsert brand / model / variant metadata in a transaction.
       // image_url is left empty on create and unchanged on update —
       // it will be set after CDN upload below.
-      const variantId = await this.prisma.$transaction(async (tx) => {
+      const { modelId, variantId } = await this.prisma.$transaction(async (tx) => {
         // 1. Upsert brand
         const brand = await tx.brand.upsert({
           where: { slug: brandSlug },
@@ -683,7 +696,7 @@ export class ScraperReviewsService {
           }
         }
 
-        return variant.id;
+        return { modelId: model.id, variantId: variant.id };
       });
 
       // Step 2: Download images from brand CDN, resize to all sizes, upload to S3.
@@ -704,9 +717,22 @@ export class ScraperReviewsService {
       this.logger.log(
         `Saved model="${modelData.modelName}" variant="${variantData.colorName}" — ${cdnKeys.length} images uploaded to CDN`,
       );
+
+      return modelId;
     } catch (err) {
       this.handlePrismaError(err);
     }
+  }
+
+  /**
+   * After a model's data lands in the helmet tables, refresh the read paths:
+   * reload the Valkey helmet/catalog cache and reindex the model's variants in
+   * Meili. Both are best-effort (the underlying services swallow their own
+   * errors) so a cache/search blip never fails the approval.
+   */
+  private async refreshDownstream(modelId: string): Promise<void> {
+    await this.cache.invalidateHelmet(modelId);
+    await this.searchSync.upsertModel(modelId);
   }
 
   private handlePrismaError(err: unknown): never {
