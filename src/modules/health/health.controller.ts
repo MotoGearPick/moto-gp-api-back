@@ -2,8 +2,7 @@ import { Controller, Get, Inject } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import Valkey from 'iovalkey';
-import { AppPrismaService } from '../../prisma/app-prisma.service';
-import { ProductsPrismaService } from '../../prisma/products-prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { VALKEY_CLIENT } from '../valkey/valkey.constants';
 
 interface CheckResult {
@@ -16,28 +15,24 @@ interface CheckResult {
 @Controller('health')
 export class HealthController {
   constructor(
-    private readonly appDb: AppPrismaService,
-    private readonly productsDb: ProductsPrismaService,
+    private readonly db: PrismaService,
     @Inject(VALKEY_CLIENT) private readonly valkey: Valkey,
   ) {}
 
   @Get()
   @ApiOperation({ summary: 'Liveness + dependency readiness probe' })
   async check() {
-    const [appDb, productsDb, cache] = await Promise.all([
-      this.probe(() => this.appDb.$queryRaw`SELECT 1`),
-      this.probe(() => this.productsDb.$queryRaw`SELECT 1`),
+    const [db, cache] = await Promise.all([
+      this.probe(() => this.db.$queryRaw`SELECT 1`),
       this.probe(() => this.valkey.ping()),
     ]);
 
-    const status = [appDb, productsDb, cache].every((c) => c.status === 'ok')
-      ? 'ok'
-      : 'degraded';
+    const status = [db, cache].every((c) => c.status === 'ok') ? 'ok' : 'degraded';
 
     return {
       status,
       timestamp: new Date().toISOString(),
-      checks: { appDb, productsDb, cache },
+      checks: { db, cache },
     };
   }
 

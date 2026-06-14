@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ProductsPrismaService } from '../../prisma/products-prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class BackupService {
-  constructor(private readonly productsPrisma: ProductsPrismaService) {}
+  constructor(private readonly productsPrisma: PrismaService) {}
 
   async exportProductsDatabase() {
     const [

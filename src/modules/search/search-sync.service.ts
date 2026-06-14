@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ProductsPrismaService } from '../../prisma/products-prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { DocumentMapper } from './document.mapper';
 import { MeiliService } from './meili.service';
 
@@ -8,7 +8,7 @@ export class SearchSyncService {
   private readonly logger = new Logger(SearchSyncService.name);
 
   constructor(
-    private readonly db: ProductsPrismaService,
+    private readonly db: PrismaService,
     private readonly meili: MeiliService,
     private readonly mapper: DocumentMapper,
   ) {}

@@ -11,7 +11,7 @@ import {
   visor_pinlock,
 } from '@prisma/products-client';
 import { paginate } from '../../../../common/pagination';
-import { ProductsPrismaService } from '../../../../prisma/products-prisma.service';
+import { PrismaService } from '../../../../prisma/prisma.service';
 import { HelmetCacheService } from '../../../valkey/helmet-cache.service';
 import { SearchSyncService } from '../../../search/search-sync.service';
 import { CreateHelmetVariantDto } from './dto/create-helmet-variant.dto';
@@ -21,7 +21,7 @@ import { FilterHelmetVariantsDto } from './dto/filter-helmet-variants.dto';
 @Injectable()
 export class HelmetVariantsService {
   constructor(
-    private readonly db: ProductsPrismaService,
+    private readonly db: PrismaService,
     private readonly cache: HelmetCacheService,
     private readonly searchSync: SearchSyncService,
   ) {}

@@ -14,7 +14,7 @@ import {
 import { Response } from 'express';
 import { ApiBody, ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
-import { AdminRole } from '@prisma/app-client';
+import { AdminRole } from '@prisma/products-client';
 import { AuthAdminService } from '../services/auth.admin.service';
 import { LoginAdminDto } from '../dto';
 import { RegisterAdminDto } from '../dto';

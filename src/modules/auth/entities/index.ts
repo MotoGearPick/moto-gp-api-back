@@ -1,1 +1,1 @@
-export { Admin } from '@prisma/app-client';
+export { Admin } from '@prisma/products-client';

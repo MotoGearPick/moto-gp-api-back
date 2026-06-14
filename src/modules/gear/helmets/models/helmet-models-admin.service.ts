@@ -9,7 +9,7 @@ import {
   visor_pinlock,
 } from '@prisma/products-client';
 import { paginate } from '../../../../common/pagination';
-import { ProductsPrismaService } from '../../../../prisma/products-prisma.service';
+import { PrismaService } from '../../../../prisma/prisma.service';
 import { HelmetCacheService } from '../../../valkey/helmet-cache.service';
 import { SearchSyncService } from '../../../search/search-sync.service';
 import { CreateHelmetModelDto } from './dto/create-helmet-model.dto';
@@ -19,7 +19,7 @@ import { FilterHelmetModelsAdminDto } from './dto/filter-helmet-models-admin.dto
 @Injectable()
 export class HelmetModelsAdminService {
   constructor(
-    private readonly db: ProductsPrismaService,
+    private readonly db: PrismaService,
     private readonly cache: HelmetCacheService,
     private readonly searchSync: SearchSyncService,
   ) {}

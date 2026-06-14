@@ -1,6 +1,6 @@
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AdminRole } from '@prisma/app-client';
+import { AdminRole } from '@prisma/products-client';
 import { RolesGuard } from './roles.guard';
 
 describe('RolesGuard', () => {

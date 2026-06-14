@@ -20,7 +20,7 @@ import {
   isPrismaKnownRequestError,
   isPrismaValidationError,
 } from '../../common/prisma-errors';
-import { ProductsPrismaService } from '../../prisma/products-prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { CdnImagesService } from '../cdn/cdn-images.service';
 import { HelmetCacheService } from '../valkey/helmet-cache.service';
 import { SearchSyncService } from '../search/search-sync.service';
@@ -35,7 +35,7 @@ export class ScraperReviewsService {
   private readonly logger = new Logger(ScraperReviewsService.name);
 
   constructor(
-    private readonly prisma: ProductsPrismaService,
+    private readonly prisma: PrismaService,
     private readonly cdnImages: CdnImagesService,
     private readonly cache: HelmetCacheService,
     private readonly searchSync: SearchSyncService,

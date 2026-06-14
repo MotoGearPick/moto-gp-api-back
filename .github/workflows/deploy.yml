@@ -65,5 +65,6 @@ jobs:
               echo "${{ secrets.GHCR_PULL_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
               export IMAGE_TAG=${{ needs.build.outputs.sha }}
               docker compose pull api
+              docker compose run --rm --no-deps api pnpm prisma:migrate:deploy
               docker compose up -d --remove-orphans
               docker image prune -f

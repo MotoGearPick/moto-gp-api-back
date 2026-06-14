@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
-import { Admin, AdminRole } from '@prisma/app-client';
+import { Admin, AdminRole } from '@prisma/products-client';
 import * as bcrypt from 'bcrypt';
 import { config } from '../../../config';
 import { AuthRepository } from '../repositories/auth.repository';

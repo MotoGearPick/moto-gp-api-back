@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import Valkey from 'iovalkey';
-import { ProductsPrismaService } from '../../prisma/products-prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { VALKEY_CLIENT } from './valkey.constants';
 
 export interface CachedVariantFilter {
@@ -56,7 +56,7 @@ export class HelmetCacheService {
 
   constructor(
     @Inject(VALKEY_CLIENT) private readonly client: Valkey,
-    private readonly db: ProductsPrismaService,
+    private readonly db: PrismaService,
   ) {}
 
   // ─── Public API ───────────────────────────────────────────────────────────────

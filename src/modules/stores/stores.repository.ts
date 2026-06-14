@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ProductsPrismaService } from '../../prisma/products-prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class StoresRepository {
-  constructor(private readonly db: ProductsPrismaService) {}
+  constructor(private readonly db: PrismaService) {}
 
   findAll() {
     return this.db.affiliate_store.findMany({

@@ -1,5 +1,4 @@
-import { Prisma as AppPrisma } from '@prisma/app-client';
-import { Prisma as ProductsPrisma } from '@prisma/products-client';
+import { Prisma } from '@prisma/products-client';
 
 export type PrismaKnownRequestError = Error & {
   code: string;
@@ -13,11 +12,9 @@ export type PrismaValidationError = Error;
 export const isPrismaKnownRequestError = (
   err: unknown,
 ): err is PrismaKnownRequestError =>
-  err instanceof AppPrisma.PrismaClientKnownRequestError ||
-  err instanceof ProductsPrisma.PrismaClientKnownRequestError;
+  err instanceof Prisma.PrismaClientKnownRequestError;
 
 export const isPrismaValidationError = (
   err: unknown,
 ): err is PrismaValidationError =>
-  err instanceof AppPrisma.PrismaClientValidationError ||
-  err instanceof ProductsPrisma.PrismaClientValidationError;
+  err instanceof Prisma.PrismaClientValidationError;

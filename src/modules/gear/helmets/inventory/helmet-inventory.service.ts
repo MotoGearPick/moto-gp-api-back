@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ProductsPrismaService } from '../../../../prisma/products-prisma.service';
+import { PrismaService } from '../../../../prisma/prisma.service';
 import { HelmetCacheService } from '../../../valkey/helmet-cache.service';
 import { SearchSyncService } from '../../../search/search-sync.service';
 import { CreateHelmetInventoryDto } from './dto/create-helmet-inventory.dto';
@@ -8,7 +8,7 @@ import { UpdateHelmetInventoryDto } from './dto/update-helmet-inventory.dto';
 @Injectable()
 export class HelmetInventoryService {
   constructor(
-    private readonly db: ProductsPrismaService,
+    private readonly db: PrismaService,
     private readonly cache: HelmetCacheService,
     private readonly searchSync: SearchSyncService,
   ) {}

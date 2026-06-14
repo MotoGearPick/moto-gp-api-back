@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { AdminRole } from '@prisma/app-client';
-import { AppPrismaService } from '../../../prisma/app-prisma.service';
+import { AdminRole } from '@prisma/products-client';
+import { PrismaService } from '../../../prisma/prisma.service';
 
 @Injectable()
 export class AuthRepository {
-  constructor(private readonly db: AppPrismaService) {}
+  constructor(private readonly db: PrismaService) {}
 
   findByEmail(email: string) {
     return this.db.admin.findUnique({ where: { email } });

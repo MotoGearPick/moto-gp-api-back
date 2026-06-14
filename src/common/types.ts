@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { AdminRole } from '@prisma/app-client';
+import { AdminRole } from '@prisma/products-client';
 
 export type JwtPayload = {
   id: string;

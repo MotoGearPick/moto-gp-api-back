@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import Valkey from 'iovalkey';
-import { ProductsPrismaService } from '../../prisma/products-prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { GearType } from '../gear/common/enums/gear-type.enum';
 import { VALKEY_CLIENT } from './valkey.constants';
 
@@ -23,7 +23,7 @@ export class BrandCacheService {
 
   constructor(
     @Inject(VALKEY_CLIENT) private readonly client: Valkey,
-    private readonly db: ProductsPrismaService,
+    private readonly db: PrismaService,
   ) {}
 
   // ─── Public API ───────────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 import { ConflictException, Injectable } from '@nestjs/common';
-import { ProductsPrismaService } from '../../../prisma/products-prisma.service';
+import { PrismaService } from '../../../prisma/prisma.service';
 import { BrandCacheService } from '../../valkey/brand-cache.service';
 import { SearchSyncService } from '../../search/search-sync.service';
 import { GearType } from '../common/enums/gear-type.enum';
@@ -8,7 +8,7 @@ import { CreateBrandDto } from './dto/create-brand.dto';
 @Injectable()
 export class BrandsService {
   constructor(
-    private readonly db: ProductsPrismaService,
+    private readonly db: PrismaService,
     private readonly brandCache: BrandCacheService,
     private readonly searchSync: SearchSyncService,
   ) {}

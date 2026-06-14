@@ -8,8 +8,7 @@ export interface AppConfig {
   COOKIE_DOMAIN: string;
   PUBLIC_API_KEY: string;
 
-  APP_DATABASE_URL: string;
-  PRODUCTS_DATABASE_URL: string;
+  DATABASE_URL: string;
 
   REDIS_URL: string;
 
@@ -45,8 +44,7 @@ export const config = (): AppConfig => ({
   COOKIE_DOMAIN: optionalEnv('COOKIE_DOMAIN', ''),
   PUBLIC_API_KEY: requireEnv('PUBLIC_API_KEY'),
 
-  APP_DATABASE_URL: requireEnv('APP_DATABASE_URL'),
-  PRODUCTS_DATABASE_URL: requireEnv('PRODUCTS_DATABASE_URL'),
+  DATABASE_URL: requireEnv('DATABASE_URL'),
 
   REDIS_URL: requireEnv('REDIS_URL'),
 

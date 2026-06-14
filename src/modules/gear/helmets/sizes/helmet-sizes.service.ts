@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ProductsPrismaService } from '../../../../prisma/products-prisma.service';
+import { PrismaService } from '../../../../prisma/prisma.service';
 import { CreateHelmetSizeDto } from './dto/create-helmet-size.dto';
 import { UpdateHelmetSizeDto } from './dto/update-helmet-size.dto';
 
 @Injectable()
 export class HelmetSizesService {
-  constructor(private readonly db: ProductsPrismaService) {}
+  constructor(private readonly db: PrismaService) {}
 
   async findAll(modelId: string) {
     await this.assertModelExists(modelId);

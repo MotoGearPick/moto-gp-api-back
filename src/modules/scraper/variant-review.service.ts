@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/products-client';
-import { ProductsPrismaService } from '../../prisma/products-prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { FilterVariantReviewsDto, ReviewVariantDto } from './dto';
 import { ScrapedModelData, ScrapedVariantData } from './interfaces';
 
@@ -11,7 +11,7 @@ import { ScrapedModelData, ScrapedVariantData } from './interfaces';
  */
 @Injectable()
 export class VariantReviewService {
-  constructor(private readonly prisma: ProductsPrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   private getRawVariant(review: any): ScrapedVariantData | null {
     if (review.raw_variant_data) {
