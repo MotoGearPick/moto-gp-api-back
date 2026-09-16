@@ -28,6 +28,8 @@ export interface AppConfig {
   S3_PUBLIC_URL: string;
 
   RESEND_API_KEY: string;
+  RESEND_FROM: string;
+  CONTACT_TO: string;
 
   SENTRY_DSN: string | undefined;
 
@@ -64,6 +66,8 @@ export const config = (): AppConfig => ({
   S3_PUBLIC_URL: optionalEnv('S3_PUBLIC_URL', ''),
 
   RESEND_API_KEY: requireEnv('RESEND_API_KEY'),
+  RESEND_FROM: optionalEnv('RESEND_FROM', 'Contact Form <onboarding@resend.dev>'),
+  CONTACT_TO: optionalEnv('CONTACT_TO', 'contact@motogearpick.com'),
 
   SENTRY_DSN: optionalEnv('SENTRY_DSN'),
 

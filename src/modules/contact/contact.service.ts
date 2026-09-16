@@ -16,19 +16,28 @@ export class ContactService {
     const { name, email, message } = contactDto;
 
     try {
-      const data = await this.resend.emails.send({
-        // Resend requires a verified domain or 'onboarding@resend.dev' for free testing.
-        // Assuming user has a verified domain for an email on motogearpick.com
-        from: `Contact Form <onboarding@resend.dev>`,
-        to: 'contact@motogearpick.com',
+      const { data, error } = await this.resend.emails.send({
+        // Por defecto usa el remitente de pruebas de Resend, que solo entrega al email
+        // dueño de la cuenta. Al verificar el dominio en resend.com/domains basta con
+        // definir RESEND_FROM y CONTACT_TO en el entorno: aquí no hay que tocar nada.
+        from: config().RESEND_FROM,
+        to: config().CONTACT_TO,
         subject: `New contact message from ${name}`,
         text: `From: ${name} (${email})\n\nMessage:\n${message}`,
         replyTo: email,
       });
 
-      this.logger.log(`Email sent successfully: ${data.data?.id}`);
+      // El SDK de Resend no lanza: devuelve { data, error }. Sin esto, un rechazo
+      // (dominio sin verificar, cuota, destinatario inválido) se reportaba como éxito.
+      if (error) {
+        this.logger.error(`Resend rechazó el email: ${error.name} — ${error.message}`);
+        throw new HttpException('Failed to send email', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+
+      this.logger.log(`Email sent successfully: ${data?.id}`);
       return { success: true, message: 'Email received' };
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       this.logger.error(`Failed to send email: ${error.message}`, error.stack);
       throw new HttpException('Failed to send email', HttpStatus.INTERNAL_SERVER_ERROR);
     }

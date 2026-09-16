@@ -1,18 +1,5 @@
 services:
 
-  db-app:
-    image: postgres:16
-    container_name: moto-gear-db-app
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: moto_gear_app
-    ports:
-      - '5434:5432'
-    volumes:
-      - db_app_data:/var/lib/postgresql/data
-
   db-products:
     image: postgres:16
     container_name: moto-gear-db-products
