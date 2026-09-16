@@ -1,6 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiSecurity } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import { SharedThrottle } from '../security/decorators/shared-throttle.decorator';
 import { ApiKeyGuard } from '../../common/guards';
 import { ContactService } from './contact.service';
 import { CreateContactDto } from './dto/create-contact.dto';
@@ -14,8 +15,11 @@ export class ContactController {
 
   @Post()
   @HttpCode(HttpStatus.OK)
-  // Envía un email vía Resend: mucho más estricto que el límite global (100/min).
-  @Throttle({ default: { limit: 3, ttl: 3_600_000 } })
+  // Envía un email vía Resend. Bucket único para todo el sitio: tras el proxy de
+  // Vercel todas las peticiones llegan con la misma IP, así que un límite por IP
+  // sería global de todas formas. @SharedThrottle lo hace explícito.
+  @SharedThrottle()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({ summary: 'Enviar mensaje de contacto' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Email enviado satisfactoriamente' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Datos inválidos' })

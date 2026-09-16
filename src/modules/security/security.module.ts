@@ -9,8 +9,15 @@ import { CustomThrottlerGuard } from './guards/throttler.guard';
       throttlers: [
         {
           name: 'default',
-          ttl: 60_000, // 1 minute
-          limit: 100,  // 100 requests per minute per IP
+          ttl: 60_000,   // 1 minuto
+          // NO es "por usuario": Caddy descarta el x-forwarded-for entrante y lo
+          // reescribe con la IP del peer, así que todo lo que llega por el front de
+          // Vercel (renderizado en servidor y los proxies /api/*) comparte un único
+          // bucket. El número es alto a propósito para que ese bucket compartido no
+          // se agote en un pico — el autocompletado del buscador escala con los
+          // usuarios y una caché fría tras un deploy dispara fallos simultáneos.
+          // Para volver a un límite por usuario real, ver @SharedThrottle.
+          limit: 1_200,
         },
       ],
     }),

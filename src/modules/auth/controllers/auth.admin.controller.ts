@@ -40,7 +40,7 @@ export class AuthAdminController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @SkipThrottle({skip: false})
+  @SkipThrottle({ default: false })
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @UseGuards(LoginGuard)
   @ApiOperation({ summary: '[Admin] Iniciar sesión' })

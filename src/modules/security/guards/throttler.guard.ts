@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { ExecutionContext, Injectable } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { SHARED_THROTTLE_KEY } from '../decorators/shared-throttle.decorator';
 
 @Injectable()
 export class CustomThrottlerGuard extends ThrottlerGuard {
@@ -15,5 +16,18 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
       return first.split(',')[0].trim();
     }
     return req.ip ?? 'unknown';
+  }
+
+  /**
+   * La clave ya incluye clase y handler, así que el bucket es por ruta. Cuando
+   * la ruta lleva @SharedThrottle() sustituimos el sufijo (la IP) por una
+   * constante, de forma que todos los clientes comparten un único contador.
+   */
+  protected generateKey(context: ExecutionContext, suffix: string, name: string): string {
+    const shared = this.reflector.getAllAndOverride<boolean>(SHARED_THROTTLE_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    return super.generateKey(context, shared ? 'shared' : suffix, name);
   }
 }
