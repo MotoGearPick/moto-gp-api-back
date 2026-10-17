@@ -29,13 +29,13 @@ export class HelmetInventoryService {
         helmet_size: { select: { id: true, size_label: true } },
       },
     });
-    await this.cache.reload();
+    await this.invalidateVariantHelmet(dto.variantId);
     await this.searchSync.upsertVariant(dto.variantId);
     return result;
   }
 
   async update(id: string, dto: UpdateHelmetInventoryDto) {
-    await this.assertExists(id);
+    const existing = await this.assertExists(id);
 
     const result = await this.db.helmet_inventory.update({
       where: { id },
@@ -55,16 +55,29 @@ export class HelmetInventoryService {
         helmet_size: { select: { id: true, size_label: true } },
       },
     });
-    await this.cache.reload();
+    await this.invalidateVariantHelmet(result.variant_id);
     await this.searchSync.upsertVariant(result.variant_id);
+    // The row moved to another variant: the old one lost this price too.
+    if (existing.variant_id !== result.variant_id) {
+      await this.invalidateVariantHelmet(existing.variant_id);
+      await this.searchSync.upsertVariant(existing.variant_id);
+    }
     return result;
   }
 
   async remove(id: string) {
     const existing = await this.assertExists(id);
     await this.db.helmet_inventory.delete({ where: { id } });
-    await this.cache.reload();
+    await this.invalidateVariantHelmet(existing.variant_id);
     await this.searchSync.upsertVariant(existing.variant_id);
+  }
+
+  private async invalidateVariantHelmet(variantId: string) {
+    const variant = await this.db.helmet_model_variant.findUnique({
+      where: { id: variantId },
+      select: { helmet_id: true },
+    });
+    if (variant) await this.cache.invalidateHelmet(variant.helmet_id);
   }
 
   private async assertExists(id: string) {

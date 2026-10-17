@@ -1,7 +1,9 @@
 import { Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { ApiKeyGuard } from '../../common/guards';
-import { AdminAccessTokenGuard } from '../auth/guards';
+import { AdminRole } from '@prisma/products-client';
+import { AdminAccessTokenGuard, RolesGuard } from '../auth/guards';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { SearchService } from './search.service';
 
@@ -19,7 +21,8 @@ export class SearchController {
   }
 
   @Post('reindex')
-  @UseGuards(AdminAccessTokenGuard)
+  @UseGuards(AdminAccessTokenGuard, RolesGuard)
+  @Roles(AdminRole.superadmin)
   @ApiSecurity('bearer')
   @ApiOperation({ summary: 'Rebuild the full Meili index from the products DB' })
   async reindex() {

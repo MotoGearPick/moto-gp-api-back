@@ -76,9 +76,10 @@ export class AuthAdminController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(AdminAccessTokenGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '[Admin] Cerrar sesión (limpia la cookie de refresh)' })
+  @ApiOperation({ summary: '[Admin] Cerrar sesión (revoca todos los refresh tokens emitidos y limpia la cookie)' })
   @ApiResponse({ status: 204, description: 'Sesión cerrada' })
-  logout(@Res({ passthrough: true }) res: Response) {
+  async logout(@UserId() id: string, @Res({ passthrough: true }) res: Response) {
+    await this.service.revokeSessions(id);
     res.clearCookie(ADMIN_REFRESH_COOKIE, clearRefreshCookieOptions());
   }
 

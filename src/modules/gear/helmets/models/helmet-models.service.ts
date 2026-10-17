@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CachedCatalogItem, CachedVariantFilter, HelmetCacheService } from '../../../valkey/helmet-cache.service';
 import { FilterHelmetModelsDto } from './dto/filter-helmet-models.dto';
-import {HelmetFinish} from "../enums";
+import {HelmetClosureType, HelmetFinish} from "../enums";
 
 @Injectable()
 export class HelmetModelsService {
@@ -36,12 +36,14 @@ export class HelmetModelsService {
   // ─── In-memory filter ────────────────────────────────────────────────────────
 
   private filterCatalog(catalog: CachedCatalogItem[], filters: FilterHelmetModelsDto): CachedCatalogItem[] {
+    const search = filters.search?.trim().toLowerCase();
     return catalog.filter((item) => {
+      if (search && !`${item.brand.name} ${item.name}`.toLowerCase().includes(search)) return false;
       if (filters.brandSlug?.length && !filters.brandSlug.includes(item.brand.slug)) return false;
       if (filters.shape?.length && !filters.shape.some((s) => item.shape.includes(s))) return false;
       if (filters.purpose?.length && !filters.purpose.some((p) => item.purpose.includes(p))) return false;
       if (filters.shellMaterial?.length && !filters.shellMaterial.some((m) => item.shellMaterial.includes(m))) return false;
-      if (filters.closureType && item.features.closureType !== filters.closureType) return false;
+      if (filters.closureType?.length && !filters.closureType.includes(item.features.closureType as HelmetClosureType)) return false;
       if (filters.visorPinlockCompatible?.length && !filters.visorPinlockCompatible.some((v) => item.features.visorPinlockCompatible.includes(v))) return false;
       if (filters.visorPinlockIncluded !== undefined && item.features.visorPinlockIncluded !== filters.visorPinlockIncluded) return false;
       if (filters.tearOffCompatible !== undefined && item.features.tearOffCompatible !== filters.tearOffCompatible) return false;

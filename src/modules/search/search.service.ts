@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DocumentMapper } from './document.mapper';
+import { DocumentMapper, variantWithRelations } from './document.mapper';
 import { MeiliService } from './meili.service';
 import { SearchQueryDto } from './dto/search-query.dto';
 
@@ -52,10 +52,7 @@ export class SearchService {
     for (;;) {
       const batch = await this.db.helmet_model_variant.findMany({
         where: { deleted_at: null, helmet_model: { deleted_at: null } },
-        include: {
-          helmet_model: { include: { brand: true } },
-          helmet_inventory: { select: { price: true, currency: true } },
-        },
+        ...variantWithRelations,
         take: REINDEX_BATCH,
         ...(cursor && { skip: 1, cursor: { id: cursor } }),
         orderBy: { id: 'asc' },

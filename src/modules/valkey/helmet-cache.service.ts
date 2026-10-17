@@ -47,7 +47,9 @@ export interface CachedCatalogItem {
 
 const CATALOG_KEY = 'catalog:helmets';
 const detailKey = (brandSlug: string, modelSlug: string) => `helmet:${brandSlug}:${modelSlug}`;
-const TTL = 40 * 60; // 40 min — safety net if the 30-min cron fails
+// A model whose variants are all hidden (e.g. a new one whose image upload failed) gets no card and no page.
+const LIVE_MODEL = { deleted_at: null, helmet_model_variant: { some: { deleted_at: null } } };
+const TTL = 40 * 60; // 40 min — keys outlive several failed 5-min crons before expiring
 
 @Injectable()
 export class HelmetCacheService {
@@ -68,9 +70,11 @@ export class HelmetCacheService {
   }
 
   async getHelmetDetail(brandSlug: string, modelSlug: string): Promise<any | null> {
-    const raw = await this.client.get(detailKey(brandSlug, modelSlug));
-    if (!raw) return null;
-    return JSON.parse(raw);
+    const key = detailKey(brandSlug, modelSlug);
+    const raw = await this.client.get(key);
+    if (raw) return JSON.parse(raw);
+    // Miss (expired after a failed cron, Valkey restart, or unknown slug): fall back to the DB.
+    return this.loadOnce(key, () => this.loadOneDetail(brandSlug, modelSlug));
   }
 
   async invalidateHelmet(modelId: string): Promise<void> {
@@ -111,7 +115,7 @@ export class HelmetCacheService {
 
   private async loadCatalog(): Promise<CachedCatalogItem[]> {
     const models = await this.db.helmet_model.findMany({
-      where: { deleted_at: null },
+      where: LIVE_MODEL,
       orderBy: { name: 'asc' },
       include: {
         brand: { select: { id: true, name: true, slug: true } },
@@ -124,6 +128,7 @@ export class HelmetCacheService {
             finish: true,
             image_url: true,
             helmet_inventory: {
+              where: { affiliate_store: { deleted_at: null } },
               select: { price: true, currency: true },
               orderBy: { price: 'asc' as const },
               take: 1,
@@ -147,7 +152,7 @@ export class HelmetCacheService {
 
   private async loadAllDetails(): Promise<void> {
     const models = await this.db.helmet_model.findMany({
-      where: { deleted_at: null },
+      where: LIVE_MODEL,
       include: this.detailInclude(),
     });
 
@@ -160,15 +165,16 @@ export class HelmetCacheService {
     await pipeline.exec();
   }
 
-  private async loadOneDetail(brandSlug: string, modelSlug: string): Promise<void> {
+  private async loadOneDetail(brandSlug: string, modelSlug: string): Promise<any | null> {
     const model = await this.db.helmet_model.findFirst({
-      where: { slug: modelSlug, brand: { slug: brandSlug }, deleted_at: null },
+      where: { ...LIVE_MODEL, slug: modelSlug, brand: { slug: brandSlug } },
       include: this.detailInclude(),
     });
+    if (!model) return null;
 
-    if (model) {
-      await this.client.set(detailKey(brandSlug, modelSlug), JSON.stringify(this.mapDetailItem(model)), 'EX', TTL);
-    }
+    const detail = this.mapDetailItem(model);
+    await this.client.set(detailKey(brandSlug, modelSlug), JSON.stringify(detail), 'EX', TTL);
+    return detail;
   }
 
   // ─── DB includes ─────────────────────────────────────────────────────────────
@@ -181,6 +187,7 @@ export class HelmetCacheService {
         where: { deleted_at: null },
         include: {
           helmet_inventory: {
+            where: { affiliate_store: { deleted_at: null } },
             select: {
               price: true,
               currency: true,

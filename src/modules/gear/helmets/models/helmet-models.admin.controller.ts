@@ -14,14 +14,17 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
-import { AdminAccessTokenGuard } from '../../../auth/guards';
+import { AdminRole } from '@prisma/products-client';
+import { AdminAccessTokenGuard, RolesGuard } from '../../../auth/guards';
+import { Roles } from '../../../auth/decorators/roles.decorator';
 import { HelmetModelsAdminService } from './helmet-models-admin.service';
 import { CreateHelmetModelDto } from './dto/create-helmet-model.dto';
 import { UpdateHelmetModelDto } from './dto/update-helmet-model.dto';
 import { FilterHelmetModelsAdminDto } from './dto/filter-helmet-models-admin.dto';
 
 @SkipThrottle()
-@UseGuards(AdminAccessTokenGuard)
+@UseGuards(AdminAccessTokenGuard, RolesGuard)
+@Roles(AdminRole.superadmin)
 @ApiBearerAuth()
 @ApiTags('Admin — Helmets')
 @Controller('admin/gear/helmets')

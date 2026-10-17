@@ -179,6 +179,7 @@ export class ScraperReviewsService {
     const allReviews = await this.prisma.scrape_review.findMany({
       where,
       orderBy: { created_at: 'desc' },
+      omit: { source_content: true }, // up to 30k chars per row; no list shows it
     });
 
     // Group by modelSlug
@@ -366,15 +367,14 @@ export class ScraperReviewsService {
     if (!review) throw new NotFoundException('Review not found');
 
     this.assertReviewedBeforeApproval([review]);
+    this.assertHasImages([review]);
 
-    const modelId = await this.persistToHelmetTables(review);
+    await this.persistToHelmetTables(review); // also refreshes cache + search
 
     const updated = await this.prisma.scrape_review.update({
       where: { id },
       data: { status: 'approved', reviewed_at: new Date() },
     });
-
-    await this.refreshDownstream(modelId);
 
     return this.mapReviewResponse(updated);
   }
@@ -408,121 +408,48 @@ export class ScraperReviewsService {
     }
 
     this.assertReviewedBeforeApproval(toApprove);
+    this.assertHasImages(toApprove);
     this.verifyModelDataConsistency(toApprove);
 
-    // Single transaction for the entire batch
+    // Single transaction for the entire batch; images are uploaded after it, like approveSingle.
     let modelId: string;
+    let variants: { id: string; variantData: ScrapedVariantData }[];
     try {
-      modelId = await this.prisma.$transaction(async (tx) => {
-      // All reviews share the same model — upsert brand and model once
-      const { modelData } = this.getResolvedData(toApprove[0]);
-      const brandSlug = modelData.brandSlug;
-      const brandName = brandSlug.charAt(0).toUpperCase() + brandSlug.slice(1);
+      ({ modelId, variants } = await this.prisma.$transaction(async (tx) => {
+        // All reviews share the same model — upsert brand, model and sizes once
+        const modelId = await this.upsertModel(tx, this.getResolvedData(toApprove[0]).modelData);
 
-      const brand = await tx.brand.upsert({
-        where: { slug: brandSlug },
-        update: {},
-        create: { name: brandName, slug: brandSlug },
-      });
-
-      const model = await tx.helmet_model.upsert({
-        where: {
-          brand_id_slug: { brand_id: brand.id, slug: modelData.modelSlug },
-        },
-        update: {},
-        create: {
-          slug: modelData.modelSlug,
-          name: modelData.modelName,
-          brand_id: brand.id,
-          helmet_shape: modelData.helmetShape as helmet_shape[],
-          helmet_purpose: modelData.helmetPurpose as helmet_purpose[],
-          shell_material: modelData.shellMaterial as helmet_shell_material[],
-          shell_sizes: modelData.shellSizes ?? undefined,
-          weight_grams: modelData.weightGrams ?? undefined,
-          visor_pinlock_compatible: modelData.visorPinlockCompatible as visor_pinlock[],
-          visor_pinlock_included: modelData.visorPinlockIncluded,
-          pinlock_dks_code: modelData.pinlockDksCode,
-          visor_anti_scratch: modelData.visorAntiScratch,
-          visor_anti_fog: modelData.visorAntiFog,
-          sun_visor: modelData.sunVisor,
-          sun_visor_type: modelData.sunVisorType,
-          intercom_ready: modelData.intercomReady,
-          intercom_designed_brand: modelData.intercomDesignedBrand,
-          intercom_designed_model: modelData.intercomDesignedModel,
-          removable_lining: modelData.removableLining,
-          washable_lining: modelData.washableLining,
-          emergency_release: modelData.emergencyRelease,
-          closure_type: (modelData.closureType as helmet_closure_type) ?? undefined,
-          certification: modelData.certification as helmet_certification[],
-          tear_off_compatible: modelData.tearOffCompatible,
-          included_accessories: modelData.includedAccessories,
-        },
-      });
-
-      // Upsert all variants in parallel
-      await Promise.all(
-        toApprove.map((r) => {
+        // Sequential, not Promise.all: a transaction runs one query at a time anyway, and two reviews
+        // of the same color (a model scraped twice) must see each other's create instead of both inserting.
+        // Keyed by variant id, so each variant's images are uploaded once.
+        const byId = new Map<string, ScrapedVariantData>();
+        for (const r of toApprove) {
           const { variantData } = this.getResolvedData(r);
-          return tx.helmet_model_variant.upsert({
-            where: {
-              helmet_id_color_name_graphic_name: {
-                helmet_id: model.id,
-                color_name: variantData.colorName,
-                graphic_name: variantData.graphicName ?? null,
-              },
-            },
-            update: {
-              color_families: { set: variantData.colorFamilies as color_family[] },
-              finish: (variantData.finish as helmet_finish) ?? undefined,
-              graphic_name: variantData.graphicName,
-              sku: variantData.sku,
-              image_url: { set: variantData.imageUrls },
-            },
-            create: {
-              helmet_id: model.id,
-              color_name: variantData.colorName,
-              color_families: variantData.colorFamilies as color_family[],
-              finish: (variantData.finish as helmet_finish) ?? undefined,
-              graphic_name: variantData.graphicName,
-              sku: variantData.sku,
-              image_url: variantData.imageUrls,
-            },
-          });
-        }),
-      );
-
-      // Batch insert sizes — one query to find existing, then createMany for new
-      if (modelData.sizes.length > 0) {
-        const existingSizes = await tx.helmet_model_size.findMany({
-          where: { model_id: model.id },
-          select: { size_label: true },
-        });
-        const existingLabels = new Set(existingSizes.map((s) => s.size_label));
-        const newSizes = modelData.sizes.filter((s) => !existingLabels.has(s));
-        if (newSizes.length > 0) {
-          await tx.helmet_model_size.createMany({
-            data: newSizes.map((s) => ({ model_id: model.id, size_label: s })),
-          });
+          byId.set(await this.upsertVariant(tx, modelId, variantData), variantData);
         }
-      }
-
-      // Update all review statuses in one query
-      await tx.scrape_review.updateMany({
-        where: { id: { in: toApprove.map((r) => r.id) } },
-        data: { status: 'approved', reviewed_at: new Date() },
-      });
-
-      this.logger.log(
-        `Batch approved ${toApprove.length} variants for model="${modelData.modelName}"`,
-      );
-
-      return model.id;
-    });
+        return { modelId, variants: [...byId].map(([id, variantData]) => ({ id, variantData })) };
+      }));
     } catch (err) {
       this.handlePrismaError(err);
     }
 
-    await this.refreshDownstream(modelId);
+    const { modelData } = this.getResolvedData(toApprove[0]);
+    try {
+      // Sequential: each variant already fans out to several image downloads/uploads.
+      for (const v of variants) {
+        await this.uploadVariantImages(v.id, v.variantData, modelData.brandSlug, modelData.modelSlug);
+      }
+
+      // Marked approved only once images are in, so a failed upload can simply be re-approved.
+      await this.prisma.scrape_review.updateMany({
+        where: { id: { in: toApprove.map((r) => r.id) } },
+        data: { status: 'approved', reviewed_at: new Date() },
+      });
+      this.logger.log(`Batch approved ${toApprove.length} variants for model="${modelData.modelName}"`);
+    } finally {
+      // Even when an upload fails midway, the variants uploaded before it are live: cache and search need them.
+      await this.refreshDownstream(modelId);
+    }
 
     return { approved: toApprove.length };
   }
@@ -605,123 +532,160 @@ export class ScraperReviewsService {
   private async persistToHelmetTables(review: any): Promise<string> {
     const { modelData, variantData } = this.getResolvedData(review);
     const brandSlug = modelData.brandSlug;
-    const brandName = brandSlug.charAt(0).toUpperCase() + brandSlug.slice(1);
 
     try {
       // Step 1: Upsert brand / model / variant metadata in a transaction.
       // image_url is left empty on create and unchanged on update —
       // it will be set after CDN upload below.
       const { modelId, variantId } = await this.prisma.$transaction(async (tx) => {
-        // 1. Upsert brand
-        const brand = await tx.brand.upsert({
-          where: { slug: brandSlug },
-          update: {},
-          create: { name: brandName, slug: brandSlug },
-        });
-
-        // 2. Upsert helmet model — never overwrite existing data
-        const model = await tx.helmet_model.upsert({
-          where: {
-            brand_id_slug: { brand_id: brand.id, slug: modelData.modelSlug },
-          },
-          update: {},
-          create: {
-            slug: modelData.modelSlug,
-            name: modelData.modelName,
-            brand_id: brand.id,
-            helmet_shape: modelData.helmetShape as helmet_shape[],
-            helmet_purpose: modelData.helmetPurpose as helmet_purpose[],
-            shell_material: modelData.shellMaterial as helmet_shell_material[],
-            shell_sizes: modelData.shellSizes ?? undefined,
-            weight_grams: modelData.weightGrams ?? undefined,
-            visor_pinlock_compatible: modelData.visorPinlockCompatible as visor_pinlock[],
-            visor_pinlock_included: modelData.visorPinlockIncluded,
-            pinlock_dks_code: modelData.pinlockDksCode,
-            visor_anti_scratch: modelData.visorAntiScratch,
-            visor_anti_fog: modelData.visorAntiFog,
-            sun_visor: modelData.sunVisor,
-            sun_visor_type: modelData.sunVisorType,
-            intercom_ready: modelData.intercomReady,
-            intercom_designed_brand: modelData.intercomDesignedBrand,
-            intercom_designed_model: modelData.intercomDesignedModel,
-            removable_lining: modelData.removableLining,
-            washable_lining: modelData.washableLining,
-            emergency_release: modelData.emergencyRelease,
-            closure_type: (modelData.closureType as helmet_closure_type) ?? undefined,
-            certification: modelData.certification as helmet_certification[],
-            tear_off_compatible: modelData.tearOffCompatible,
-            included_accessories: modelData.includedAccessories,
-          },
-        });
-
-        // 3. Upsert variant — image_url set after CDN upload
-        const variant = await tx.helmet_model_variant.upsert({
-          where: {
-            helmet_id_color_name_graphic_name: {
-              helmet_id: model.id,
-              color_name: variantData.colorName,
-              graphic_name: variantData.graphicName ?? null,
-            },
-          },
-          update: {
-            color_families: { set: variantData.colorFamilies as color_family[] },
-            finish: (variantData.finish as helmet_finish) ?? undefined,
-            graphic_name: variantData.graphicName,
-            sku: variantData.sku,
-            // image_url intentionally not updated here — set after CDN upload
-          },
-          create: {
-            helmet_id: model.id,
-            color_name: variantData.colorName,
-            color_families: variantData.colorFamilies as color_family[],
-            finish: (variantData.finish as helmet_finish) ?? undefined,
-            graphic_name: variantData.graphicName,
-            sku: variantData.sku,
-            image_url: [], // populated after CDN upload
-          },
-        });
-
-        // 4. Insert sizes (skip duplicates)
-        if (modelData.sizes.length > 0) {
-          const existingSizes = await tx.helmet_model_size.findMany({
-            where: { model_id: model.id },
-            select: { size_label: true },
-          });
-          const existingLabels = new Set(existingSizes.map((s) => s.size_label));
-          const newSizes = modelData.sizes.filter((s) => !existingLabels.has(s));
-          if (newSizes.length > 0) {
-            await tx.helmet_model_size.createMany({
-              data: newSizes.map((s) => ({ model_id: model.id, size_label: s })),
-            });
-          }
-        }
-
-        return { modelId: model.id, variantId: variant.id };
+        const modelId = await this.upsertModel(tx, modelData);
+        const variantId = await this.upsertVariant(tx, modelId, variantData);
+        return { modelId, variantId };
       });
 
-      // Step 2: Download images from brand CDN, resize to all sizes, upload to S3.
-      // Runs outside the transaction — no DB lock held during network I/O.
-      const cdnKeys = await this.cdnImages.processVariantImages(
-        variantData.imageUrls,
-        brandSlug,
-        modelData.modelSlug,
-        variantId,
-      );
-
-      // Step 3: Update variant with CDN keys
-      await this.prisma.helmet_model_variant.update({
-        where: { id: variantId },
-        data: { image_url: cdnKeys },
-      });
-
-      this.logger.log(
-        `Saved model="${modelData.modelName}" variant="${variantData.colorName}" — ${cdnKeys.length} images uploaded to CDN`,
-      );
+      try {
+        await this.uploadVariantImages(variantId, variantData, brandSlug, modelData.modelSlug);
+      } finally {
+        // The variant's fields are saved even if the upload fails: cache and search must see them (as in batchApprove).
+        await this.refreshDownstream(modelId);
+      }
+      this.logger.log(`Saved model="${modelData.modelName}" variant="${variantData.colorName}"`);
 
       return modelId;
     } catch (err) {
       this.handlePrismaError(err);
     }
+  }
+
+  /**
+   * Upsert the brand and the helmet model (an existing model is never overwritten),
+   * and add any sizes the model doesn't have yet. Returns the model id.
+   */
+  private async upsertModel(tx: Prisma.TransactionClient, modelData: ScrapedModelData): Promise<string> {
+    const brandSlug = modelData.brandSlug;
+    const brand = await tx.brand.upsert({
+      where: { slug: brandSlug },
+      update: {},
+      create: { name: brandSlug.charAt(0).toUpperCase() + brandSlug.slice(1), slug: brandSlug },
+    });
+
+    const model = await tx.helmet_model.upsert({
+      where: {
+        brand_id_slug: { brand_id: brand.id, slug: modelData.modelSlug },
+      },
+      update: {},
+      create: {
+        slug: modelData.modelSlug,
+        name: modelData.modelName,
+        brand_id: brand.id,
+        helmet_shape: modelData.helmetShape as helmet_shape[],
+        helmet_purpose: modelData.helmetPurpose as helmet_purpose[],
+        shell_material: modelData.shellMaterial as helmet_shell_material[],
+        shell_sizes: modelData.shellSizes ?? undefined,
+        weight_grams: modelData.weightGrams ?? undefined,
+        visor_pinlock_compatible: modelData.visorPinlockCompatible as visor_pinlock[],
+        visor_pinlock_included: modelData.visorPinlockIncluded,
+        pinlock_dks_code: modelData.pinlockDksCode,
+        visor_anti_scratch: modelData.visorAntiScratch,
+        visor_anti_fog: modelData.visorAntiFog,
+        sun_visor: modelData.sunVisor,
+        sun_visor_type: modelData.sunVisorType,
+        intercom_ready: modelData.intercomReady,
+        intercom_designed_brand: modelData.intercomDesignedBrand,
+        intercom_designed_model: modelData.intercomDesignedModel,
+        removable_lining: modelData.removableLining,
+        washable_lining: modelData.washableLining,
+        emergency_release: modelData.emergencyRelease,
+        closure_type: (modelData.closureType as helmet_closure_type) ?? undefined,
+        certification: modelData.certification as helmet_certification[],
+        tear_off_compatible: modelData.tearOffCompatible,
+        included_accessories: modelData.includedAccessories,
+      },
+    });
+
+    if (modelData.sizes.length > 0) {
+      const existingSizes = await tx.helmet_model_size.findMany({
+        where: { model_id: model.id },
+        select: { size_label: true },
+      });
+      const existingLabels = new Set(existingSizes.map((s) => s.size_label));
+      const newSizes = modelData.sizes.filter((s) => !existingLabels.has(s));
+      if (newSizes.length > 0) {
+        await tx.helmet_model_size.createMany({
+          data: newSizes.map((s) => ({ model_id: model.id, size_label: s })),
+        });
+      }
+    }
+
+    return model.id;
+  }
+
+  /**
+   * Find the variant by (helmet, color, graphic) and update it, or create it hidden.
+   * Not a Prisma `upsert`: Prisma rejects null inside a compound-unique `where`, and most
+   * variants have no graphic. The NULLS NOT DISTINCT index still blocks a duplicate insert.
+   * image_url is left alone here — uploadVariantImages sets it after the CDN upload.
+   */
+  private async upsertVariant(
+    tx: Prisma.TransactionClient,
+    helmetId: string,
+    variantData: ScrapedVariantData,
+  ): Promise<string> {
+    const fields = {
+      color_families: variantData.colorFamilies as color_family[],
+      finish: (variantData.finish as helmet_finish) ?? undefined,
+      graphic_name: variantData.graphicName,
+      sku: variantData.sku,
+    };
+    const existing = await tx.helmet_model_variant.findFirst({
+      where: { helmet_id: helmetId, color_name: variantData.colorName, graphic_name: variantData.graphicName ?? null },
+      select: { id: true },
+    });
+    if (existing) {
+      await tx.helmet_model_variant.update({ where: { id: existing.id }, data: fields });
+      return existing.id;
+    }
+    const created = await tx.helmet_model_variant.create({
+      data: {
+        ...fields,
+        helmet_id: helmetId,
+        color_name: variantData.colorName,
+        image_url: [],
+        deleted_at: new Date(), // hidden until uploadVariantImages publishes it
+      },
+      select: { id: true },
+    });
+    return created.id;
+  }
+
+  /**
+   * Download a variant's images from the brand CDN, resize to all sizes, upload to S3,
+   * then point the variant at the CDN keys. Runs outside any transaction — no DB lock
+   * held during network I/O.
+   */
+  private async uploadVariantImages(
+    variantId: string,
+    variantData: ScrapedVariantData,
+    brandSlug: string,
+    modelSlug: string,
+  ): Promise<void> {
+    const cdnKeys = await this.cdnImages.processVariantImages(
+      variantData.imageUrls,
+      brandSlug,
+      modelSlug,
+      variantId,
+    );
+    // First images publish the variant (created hidden, or a retry after a failed upload), so a failed
+    // upload never leaves a live variant without images. A variant that already had images keeps its
+    // deleted_at: approving a scrape must not bring back a color an admin deleted on purpose.
+    const { count } = await this.prisma.helmet_model_variant.updateMany({
+      where: { id: variantId, image_url: { isEmpty: true } },
+      data: { image_url: cdnKeys, deleted_at: null },
+    });
+    if (count === 0) {
+      await this.prisma.helmet_model_variant.update({ where: { id: variantId }, data: { image_url: cdnKeys } });
+    }
+    this.logger.log(`Variant ${variantId}: ${cdnKeys.length} images uploaded to CDN`);
   }
 
   /**
@@ -758,6 +722,16 @@ export class ScraperReviewsService {
     }
     this.logger.error('Unexpected error in database operation', err);
     throw err;
+  }
+
+  // Approval publishes a variant once its images are uploaded; with none it would go live as a blank tile.
+  private assertHasImages(reviews: any[]) {
+    const missing = reviews.filter((r) => !this.getResolvedData(r).variantData.imageUrls?.length);
+    if (missing.length > 0) {
+      throw new BadRequestException(
+        `Cannot approve: ${missing.length} variant(s) have no images (${missing.map((r) => r.id).join(', ')})`,
+      );
+    }
   }
 
   /**

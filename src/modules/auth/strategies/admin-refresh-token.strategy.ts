@@ -7,6 +7,7 @@ import { JwtPayload } from '../../../common/types';
 import { config } from '../../../config';
 import { Logger } from '../../logger';
 import { ADMIN_REFRESH_COOKIE } from '../cookies';
+import { AuthAdminService } from '../services/auth.admin.service';
 
 /** Extrae el refresh token de la cookie httpOnly. */
 const cookieExtractor = (req: Request): string | null =>
@@ -17,7 +18,10 @@ export class AdminRefreshTokenStrategy extends PassportStrategy(
   Strategy,
   'admin-refresh',
 ) {
-  constructor(private readonly logger: Logger) {
+  constructor(
+    private readonly logger: Logger,
+    private readonly authService: AuthAdminService,
+  ) {
     super({
       // Prioriza la cookie; fallback al header Bearer (Swagger/Postman).
       jwtFromRequest: ExtractJwt.fromExtractors([
@@ -29,12 +33,12 @@ export class AdminRefreshTokenStrategy extends PassportStrategy(
     });
   }
 
-  validate(req: Request, payload: JwtPayload) {
+  async validate(req: Request, payload: JwtPayload & { iat: number }) {
     const refreshToken =
       cookieExtractor(req) ??
       req.get('Authorization')?.replace('Bearer', '').trim();
 
-    if (!refreshToken) {
+    if (!refreshToken || (await this.authService.isRefreshTokenRevoked(payload.id, payload.iat))) {
       this.logger.warn(UnauthorizedException.name, {
         id: payload?.id,
         error: new UnauthorizedException(),

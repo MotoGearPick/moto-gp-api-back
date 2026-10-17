@@ -26,7 +26,6 @@
     "prisma:migrate:prod": "dotenv -e .env.prod -- prisma migrate deploy --config=prisma/products/prisma.config.ts",
     "prisma:migrate:deploy": "prisma migrate deploy --config=prisma/products/prisma.config.ts",
     "prisma:studio": "dotenv -e .env.local -- prisma studio --config=prisma/products/prisma.config.ts",
-    "heroku-postbuild": "pnpm prisma:generate && pnpm build",
     "reindex:local": "dotenv -e .env.local -- ts-node scripts/reindex.ts",
     "reindex:prod": "dotenv -e .env.prod -- ts-node scripts/reindex.ts"
   },

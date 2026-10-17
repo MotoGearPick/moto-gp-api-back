@@ -2,11 +2,14 @@ import { Controller, Get, Res, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { SkipThrottle } from '@nestjs/throttler';
-import { AdminAccessTokenGuard } from '../auth/guards';
+import { AdminRole } from '@prisma/products-client';
+import { AdminAccessTokenGuard, RolesGuard } from '../auth/guards';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { BackupService } from './backup.service';
 
 @SkipThrottle()
-@UseGuards(AdminAccessTokenGuard)
+@UseGuards(AdminAccessTokenGuard, RolesGuard)
+@Roles(AdminRole.superadmin)
 @ApiBearerAuth()
 @ApiTags('Admin — Backup')
 @Controller('admin/backup')

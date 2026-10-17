@@ -4,25 +4,18 @@ REST API for browsing, comparing, and managing motorcycle gear — starting with
 
 ## Architecture
 
-The API uses a **dual-database** design:
-
-| Database | Schema | Purpose |
-|---|---|---|
-| `moto_gear_app` | `prisma/app/schema.prisma` | Users, admins, authentication |
-| `moto_gear_products` | `prisma/products/schema.prisma` | Brands, helmet models, variants, sizes, inventory, scrape reviews |
-
-Both databases are PostgreSQL, each with its own Prisma client (`@prisma/app-client` and `@prisma/products-client`).
+One PostgreSQL database (`DATABASE_URL`), schema at `prisma/products/schema.prisma`, one Prisma client (`@prisma/products-client`): admins, brands, helmet models, variants, sizes, inventory, scrape reviews.
 
 ## Tech Stack
 
 - **Runtime:** Node.js 24
 - **Framework:** NestJS 11
 - **ORM:** Prisma 7 (with `@prisma/adapter-pg`)
-- **Auth:** Passport + JWT (access / refresh / reset tokens)
+- **Auth:** Passport + JWT (access / refresh tokens)
 - **Validation:** class-validator + class-transformer
 - **Docs:** Swagger (auto-generated at `/docs`)
 - **Package Manager:** pnpm 10
-- **Deployment:** Heroku
+- **Deployment:** Docker on AWS Lightsail (GitHub Actions on push to `master`)
 
 ## Modules
 
@@ -41,7 +34,7 @@ Both databases are PostgreSQL, each with its own Prisma client (`@prisma/app-cli
 
 - Node.js 24.x
 - pnpm 10.x
-- Two PostgreSQL databases (app + products)
+- PostgreSQL
 
 ## Getting Started
 
@@ -57,18 +50,15 @@ cp .env.example .env
 
 | Variable | Required | Description |
 |---|---|---|
-| `APP_DATABASE_URL` | Yes | PostgreSQL connection string for app DB |
-| `PRODUCTS_DATABASE_URL` | Yes | PostgreSQL connection string for products DB |
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `APP_URL` | Yes | Public URL of the API |
 | `JWT_ADMIN_ACCESS_SECRET` | Yes | Secret for admin access tokens |
 | `JWT_ADMIN_REFRESH_SECRET` | Yes | Secret for admin refresh tokens |
-| `JWT_ADMIN_RESET_SECRET` | Yes | Secret for admin password reset tokens |
 | `PORT` | No | Server port (default: `3000`) |
 | `APP_ENV` | No | Environment name (default: `local`) |
 | `CORS_URLS` | No | Allowed CORS origins |
 | `JWT_ADMIN_ACCESS_EXPIRES` | No | Access token TTL (default: `15m`) |
 | `JWT_ADMIN_REFRESH_EXPIRES` | No | Refresh token TTL (default: `7d`) |
-| `JWT_ADMIN_RESET_EXPIRES` | No | Reset token TTL (default: `1h`) |
 
 ### Database Setup
 

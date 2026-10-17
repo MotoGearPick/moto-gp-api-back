@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
+import { HelmetCacheService } from '../../../valkey/helmet-cache.service';
 import { CreateHelmetSizeDto } from './dto/create-helmet-size.dto';
 import { UpdateHelmetSizeDto } from './dto/update-helmet-size.dto';
 
 @Injectable()
 export class HelmetSizesService {
-  constructor(private readonly db: PrismaService) {}
+  constructor(
+    private readonly db: PrismaService,
+    private readonly cache: HelmetCacheService,
+  ) {}
 
   async findAll(modelId: string) {
     await this.assertModelExists(modelId);
@@ -25,12 +29,14 @@ export class HelmetSizesService {
   async create(modelId: string, dto: CreateHelmetSizeDto) {
     await this.assertModelExists(modelId);
 
-    return this.db.helmet_model_size.create({
+    const result = await this.db.helmet_model_size.create({
       data: {
         model_id: modelId,
         size_label: dto.sizeLabel,
       },
     });
+    await this.cache.invalidateHelmet(modelId);
+    return result;
   }
 
   async update(modelId: string, sizeId: string, dto: UpdateHelmetSizeDto) {
@@ -43,10 +49,12 @@ export class HelmetSizesService {
     if (!size)
       throw new NotFoundException(`Size #${sizeId} not found for model #${modelId}`);
 
-    return this.db.helmet_model_size.update({
+    const result = await this.db.helmet_model_size.update({
       where: { id: sizeId },
       data: { size_label: dto.sizeLabel },
     });
+    await this.cache.invalidateHelmet(modelId);
+    return result;
   }
 
   async remove(modelId: string, sizeId: string) {
@@ -60,6 +68,7 @@ export class HelmetSizesService {
       throw new NotFoundException(`Size #${sizeId} not found for model #${modelId}`);
 
     await this.db.helmet_model_size.delete({ where: { id: sizeId } });
+    await this.cache.invalidateHelmet(modelId);
   }
 
   private async assertModelExists(modelId: string) {

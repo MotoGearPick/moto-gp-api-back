@@ -7,7 +7,6 @@ import {
   LoginStrategy,
   AdminAccessTokenStrategy,
   AdminRefreshTokenStrategy,
-  AdminResetTokenStrategy,
 } from './strategies';
 
 @Module({
@@ -19,7 +18,6 @@ import {
     LoginStrategy,
     AdminAccessTokenStrategy,
     AdminRefreshTokenStrategy,
-    AdminResetTokenStrategy,
   ],
   exports: [AuthAdminService],
 })

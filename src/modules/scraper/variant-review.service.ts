@@ -83,6 +83,7 @@ export class VariantReviewService {
     const reviews = await this.prisma.scrape_review.findMany({
       where,
       orderBy: { created_at: 'desc' },
+      omit: { source_content: true }, // up to 30k chars per row; no list shows it
     });
 
     let mapped = reviews

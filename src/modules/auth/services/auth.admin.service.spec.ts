@@ -12,7 +12,6 @@ describe('AuthAdminService', () => {
     process.env.REDIS_URL = 'redis://x';
     process.env.JWT_ADMIN_ACCESS_SECRET = 'access';
     process.env.JWT_ADMIN_REFRESH_SECRET = 'refresh';
-    process.env.JWT_ADMIN_RESET_SECRET = 'reset';
     process.env.S3_ACCESS_KEY_ID = 'x';
     process.env.S3_SECRET_ACCESS_KEY = 'x';
     process.env.S3_BUCKET = 'x';
@@ -38,7 +37,12 @@ describe('AuthAdminService', () => {
     const jwt = {
       signAsync: jest.fn(async (payload, opts) => `token-${opts.secret}-${opts.expiresIn}`),
     };
-    const service = new AuthAdminService(repo as any, jwt as any);
+    const store = new Map<string, string>();
+    const valkey = {
+      set: jest.fn(async (key: string, value: string) => store.set(key, value)),
+      get: jest.fn(async (key: string) => store.get(key) ?? null),
+    };
+    const service = new AuthAdminService(repo as any, jwt as any, valkey as any);
     return { service, repo, jwt };
   };
 
@@ -87,5 +91,29 @@ describe('AuthAdminService', () => {
       service.register({ name: 'x', email: 'a@b.com', password: 'pw12345678' }),
     ).rejects.toBeInstanceOf(ConflictException);
     expect(repo.create).not.toHaveBeenCalled();
+  });
+
+  it('logout revokes every refresh token the admin was issued so far, older rotated ones included', async () => {
+    const { service } = makeService();
+    const now = Math.floor(Date.now() / 1000);
+
+    expect(await service.isRefreshTokenRevoked('u1', now)).toBe(false);
+    await service.revokeSessions('u1');
+
+    expect(await service.isRefreshTokenRevoked('u1', now - 3600)).toBe(true); // rotated out an hour ago
+    expect(await service.isRefreshTokenRevoked('u1', now)).toBe(true); // issued by the refresh right before logout
+    expect(await service.isRefreshTokenRevoked('u1', now + 5)).toBe(false); // next login
+    expect(await service.isRefreshTokenRevoked('u2', now - 3600)).toBe(false); // other admins untouched
+  });
+
+  it('stores the email lowercased, matching what login looks up', async () => {
+    const { service, repo } = makeService({
+      create: jest.fn(async (data) => ({ id: 'u1', ...data })),
+    });
+
+    await service.register({ name: 'x', email: ' Juan@Shop.com ', password: 'pw12345678' });
+
+    expect(repo.findByEmail).toHaveBeenCalledWith('juan@shop.com');
+    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ email: 'juan@shop.com' }));
   });
 });

@@ -2,7 +2,9 @@ import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import { IsEnum, IsOptional } from 'class-validator';
-import { AdminAccessTokenGuard } from '../../auth/guards';
+import { AdminRole } from '@prisma/products-client';
+import { AdminAccessTokenGuard, RolesGuard } from '../../auth/guards';
+import { Roles } from '../../auth/decorators/roles.decorator';
 import { BrandsService } from './brands.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { GearType } from '../common/enums/gear-type.enum';
@@ -14,7 +16,9 @@ class BrandsQueryDto {
 }
 
 @SkipThrottle()
-@UseGuards(AdminAccessTokenGuard)
+@UseGuards(AdminAccessTokenGuard, RolesGuard)
+// The reviewer's scraper comparison screen lists brands and creates missing ones.
+@Roles(AdminRole.variant_reviewer)
 @ApiBearerAuth()
 @ApiTags('Admin — Brands')
 @Controller('admin/gear/brands')

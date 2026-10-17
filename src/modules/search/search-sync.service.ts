@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DocumentMapper } from './document.mapper';
+import { DocumentMapper, variantWithRelations } from './document.mapper';
 import { MeiliService } from './meili.service';
 
 @Injectable()
@@ -17,10 +17,7 @@ export class SearchSyncService {
     try {
       const variant = await this.db.helmet_model_variant.findUnique({
         where: { id: variantId },
-        include: {
-          helmet_model: { include: { brand: true } },
-          helmet_inventory: { select: { price: true, currency: true } },
-        },
+        ...variantWithRelations,
       });
 
       if (!variant || variant.deleted_at || variant.helmet_model.deleted_at) {
@@ -38,10 +35,7 @@ export class SearchSyncService {
     try {
       const variants = await this.db.helmet_model_variant.findMany({
         where: { helmet_id: modelId },
-        include: {
-          helmet_model: { include: { brand: true } },
-          helmet_inventory: { select: { price: true, currency: true } },
-        },
+        ...variantWithRelations,
       });
 
       const liveVariants = variants.filter(
@@ -69,10 +63,7 @@ export class SearchSyncService {
           deleted_at: null,
           helmet_model: { brand_id: brandId, deleted_at: null },
         },
-        include: {
-          helmet_model: { include: { brand: true } },
-          helmet_inventory: { select: { price: true, currency: true } },
-        },
+        ...variantWithRelations,
       });
 
       if (variants.length) {
@@ -80,6 +71,26 @@ export class SearchSyncService {
       }
     } catch (err) {
       this.logger.error(`Failed to upsert brand ${brandId} in Meili`, err);
+    }
+  }
+
+  // A store's prices feed priceFrom of every variant it sells; resync those after it is deleted or restored.
+  async upsertStore(storeId: string): Promise<void> {
+    try {
+      const variants = await this.db.helmet_model_variant.findMany({
+        where: {
+          deleted_at: null,
+          helmet_model: { deleted_at: null },
+          helmet_inventory: { some: { store_id: storeId } },
+        },
+        ...variantWithRelations,
+      });
+
+      if (variants.length) {
+        await this.meili.index.addDocuments(variants.map((v) => this.mapper.toDoc(v)));
+      }
+    } catch (err) {
+      this.logger.error(`Failed to upsert store ${storeId} in Meili`, err);
     }
   }
 

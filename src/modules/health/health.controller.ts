@@ -1,4 +1,5 @@
-import { Controller, Get, Inject } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Inject, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import Valkey from 'iovalkey';
@@ -21,13 +22,15 @@ export class HealthController {
 
   @Get()
   @ApiOperation({ summary: 'Liveness + dependency readiness probe' })
-  async check() {
+  async check(@Res({ passthrough: true }) res: Response) {
     const [db, cache] = await Promise.all([
       this.probe(() => this.db.$queryRaw`SELECT 1`),
       this.probe(() => this.valkey.ping()),
     ]);
 
     const status = [db, cache].every((c) => c.status === 'ok') ? 'ok' : 'degraded';
+    // Probes and uptime monitors read the status code, not the body.
+    if (status === 'degraded') res.status(HttpStatus.SERVICE_UNAVAILABLE);
 
     return {
       status,

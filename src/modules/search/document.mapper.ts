@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/products-client';
 import { HelmetSearchDoc } from './search.types';
 
-const variantWithRelations = Prisma.validator<Prisma.helmet_model_variantDefaultArgs>()({
+// Every query that feeds toDoc spreads this, so search prices match the helmet cache.
+export const variantWithRelations = Prisma.validator<Prisma.helmet_model_variantDefaultArgs>()({
   include: {
     helmet_model: { include: { brand: true } },
-    helmet_inventory: { select: { price: true, currency: true } },
+    helmet_inventory: {
+      where: { affiliate_store: { deleted_at: null } },
+      select: { price: true, currency: true },
+    },
   },
 });
 

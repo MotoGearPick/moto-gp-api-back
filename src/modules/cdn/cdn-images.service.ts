@@ -1,10 +1,13 @@
 import {Injectable, Logger} from '@nestjs/common';
+import {createHash} from 'node:crypto';
 import * as sharp from 'sharp';
 import {S3Service} from '../s3/s3.service';
 import {getMaxQualityUrl} from './cdn-url-transformers';
 
 const SIZES = [140, 200, 400, 600, 800, 1200, 1400, 1600] as const;
 const QUALITY = 90;
+
+const urlKey = (url: string) => createHash('sha1').update(url).digest('hex').slice(0, 12);
 
 // ─── Service ──────────────────────────────────────────────────────────────────
 
@@ -16,8 +19,9 @@ export class CdnImagesService {
 
   /**
    * Download, resize to all sizes, and upload a variant's images to S3.
-   * Returns CDN base keys (e.g. "helmets/agv/k6/<variantId>/0").
-   * Idempotent — skips sizes already in S3.
+   * Returns CDN base keys (e.g. "helmets/agv/k6/<variantId>/3f2a9c1b0d4e").
+   * Keyed by source URL, not position: retrying the same images skips sizes already in S3,
+   * while a brand reshoot (new URL) gets a new key instead of keeping the old photo.
    */
   async processVariantImages(
     imageUrls: string[],
@@ -26,8 +30,8 @@ export class CdnImagesService {
     variantId: string,
   ): Promise<string[]> {
       return await Promise.all(
-        imageUrls.map((url, idx) =>
-            this.processImage(url, `helmets/${brandSlug}/${modelSlug}/${variantId}/${idx}`),
+        imageUrls.map((url) =>
+            this.processImage(url, `helmets/${brandSlug}/${modelSlug}/${variantId}/${urlKey(url)}`),
         ),
     );
   }

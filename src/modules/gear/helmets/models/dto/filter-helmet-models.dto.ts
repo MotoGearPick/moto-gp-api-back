@@ -6,6 +6,7 @@ import {
   IsInt,
   IsNumber,
   IsOptional,
+  IsString,
   Max,
   Min,
 } from 'class-validator';
@@ -22,6 +23,18 @@ import {
 } from '../../enums';
 
 export class FilterHelmetModelsDto extends PaginationDto {
+  // The public listing sorts and pages client-side, so it asks for the whole catalog.
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  limit?: number = 20;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
   @IsOptional()
   @IsArray()
   @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
@@ -46,8 +59,10 @@ export class FilterHelmetModelsDto extends PaginationDto {
   shellMaterial?: HelmetShellMaterial[];
 
   @IsOptional()
-  @IsEnum(HelmetClosureType)
-  closureType?: HelmetClosureType;
+  @IsArray()
+  @IsEnum(HelmetClosureType, { each: true })
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  closureType?: HelmetClosureType[];
 
   @IsOptional()
   @IsArray()

@@ -25,12 +25,15 @@ import {
 } from '@nestjs/swagger';
 import { memoryStorage } from 'multer';
 import { SkipThrottle } from '@nestjs/throttler';
-import { AdminAccessTokenGuard } from '../auth/guards';
+import { AdminRole } from '@prisma/products-client';
+import { AdminAccessTokenGuard, RolesGuard } from '../auth/guards';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { StoresAdminService } from './stores.admin.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 
 @SkipThrottle()
-@UseGuards(AdminAccessTokenGuard)
+@UseGuards(AdminAccessTokenGuard, RolesGuard)
+@Roles(AdminRole.superadmin)
 @ApiBearerAuth()
 @ApiTags('Admin — Stores')
 @Controller('admin/stores')

@@ -1,3 +1,3 @@
-import { requireEnv } from './util';
+import { config } from './index';
 
-export const VALKEY_URL = () => requireEnv('REDIS_URL');
+export const VALKEY_URL = () => config().REDIS_URL;

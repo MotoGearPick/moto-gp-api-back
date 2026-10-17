@@ -1,6 +1,8 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { StoresRepository } from './stores.repository';
 import { S3Service } from '../s3/s3.service';
+import { HelmetCacheService } from '../valkey/helmet-cache.service';
+import { SearchSyncService } from '../search/search-sync.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { resolveLogoUrl } from './stores.utils';
 
@@ -9,6 +11,8 @@ export class StoresAdminService {
   constructor(
     private readonly repo: StoresRepository,
     private readonly s3: S3Service,
+    private readonly helmetCache: HelmetCacheService,
+    private readonly searchSync: SearchSyncService,
   ) {}
 
   async findAll() {
@@ -45,12 +49,17 @@ export class StoresAdminService {
   async remove(id: string) {
     await this.findOne(id);
     await this.repo.softDelete(id);
+    // The store's prices are baked into every cached helmet and search doc it sells.
+    await this.helmetCache.reload();
+    await this.searchSync.upsertStore(id);
   }
 
   async restore(id: string) {
     const store = await this.repo.findById(id);
     if (!store) throw new NotFoundException(`Tienda #${id} no encontrada`);
     const restored = await this.repo.restore(id);
+    await this.helmetCache.reload();
+    await this.searchSync.upsertStore(id);
     return this.mapStore(restored);
   }
 

@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { BrandCacheService } from './brand-cache.service';
 import { HelmetCacheService } from './helmet-cache.service';
 
@@ -16,7 +16,8 @@ export class CacheCoordinatorService implements OnModuleInit {
     await this.reloadAll();
   }
 
-  @Cron('*/30 * * * *')
+  // Admin writes refresh Valkey immediately; this catches changes made outside the API (e.g. direct DB edits).
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async scheduledReload() {
     this.logger.log('Scheduled cache reload started');
     await this.reloadAll();

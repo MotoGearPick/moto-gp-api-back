@@ -14,11 +14,9 @@ export interface AppConfig {
 
   JWT_ADMIN_ACCESS_SECRET: string;
   JWT_ADMIN_REFRESH_SECRET: string;
-  JWT_ADMIN_RESET_SECRET: string;
 
   JWT_ADMIN_ACCESS_EXPIRES: string;
   JWT_ADMIN_REFRESH_EXPIRES: string;
-  JWT_ADMIN_RESET_EXPIRES: string;
 
   S3_ACCESS_KEY_ID: string;
   S3_SECRET_ACCESS_KEY: string;
@@ -52,16 +50,14 @@ export const config = (): AppConfig => ({
 
   JWT_ADMIN_ACCESS_SECRET: requireEnv('JWT_ADMIN_ACCESS_SECRET'),
   JWT_ADMIN_REFRESH_SECRET: requireEnv('JWT_ADMIN_REFRESH_SECRET'),
-  JWT_ADMIN_RESET_SECRET: requireEnv('JWT_ADMIN_RESET_SECRET'),
 
   JWT_ADMIN_ACCESS_EXPIRES: optionalEnv('JWT_ADMIN_ACCESS_EXPIRES', '15m'),
   JWT_ADMIN_REFRESH_EXPIRES: optionalEnv('JWT_ADMIN_REFRESH_EXPIRES', '7d'),
-  JWT_ADMIN_RESET_EXPIRES: optionalEnv('JWT_ADMIN_RESET_EXPIRES', '1h'),
 
   S3_ACCESS_KEY_ID: requireEnv('S3_ACCESS_KEY_ID'),
   S3_SECRET_ACCESS_KEY: requireEnv('S3_SECRET_ACCESS_KEY'),
   S3_BUCKET: requireEnv('S3_BUCKET'),
-  S3_REGION: optionalEnv('S3_REGION', 'auto'),
+  S3_REGION: optionalEnv('S3_REGION', 'us-east-1'),
   S3_ENDPOINT: optionalEnv('S3_ENDPOINT'),
   S3_PUBLIC_URL: optionalEnv('S3_PUBLIC_URL', ''),
 
