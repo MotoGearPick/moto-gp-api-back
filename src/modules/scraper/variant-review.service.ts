@@ -63,6 +63,8 @@ export class VariantReviewService {
         colorFamilies: resolved.colorFamilies ?? [],
         finish: resolved.finish ?? null,
         graphicName: resolved.graphicName ?? null,
+        exposedCarbon: resolved.exposedCarbon ?? false,
+        isMono: resolved.isMono ?? false,
       },
       // Variant context (read-only)
       sku: resolved.sku ?? null,
@@ -134,6 +136,8 @@ export class VariantReviewService {
     if (dto.colorFamilies !== undefined) merged.colorFamilies = dto.colorFamilies;
     if (dto.finish !== undefined) merged.finish = dto.finish;
     if (dto.graphicName !== undefined) merged.graphicName = dto.graphicName;
+    if (dto.exposedCarbon !== undefined) merged.exposedCarbon = dto.exposedCarbon;
+    if (dto.isMono !== undefined) merged.isMono = dto.isMono;
 
     const updated = await this.prisma.scrape_review.update({
       where: { id },

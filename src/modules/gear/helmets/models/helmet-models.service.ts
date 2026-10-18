@@ -62,11 +62,13 @@ export class HelmetModelsService {
   }
 
   private hasVariantFilters(filters: FilterHelmetModelsDto): boolean {
-    return !!(filters.colorFamily?.length) || filters.exclusive === true || !!(filters.finish?.length);
+    return !!(filters.colorFamily?.length) || filters.exclusive === true || !!(filters.finish?.length) || filters.exposedCarbon === true;
   }
 
   private variantMatches(variant: CachedVariantFilter, filters: FilterHelmetModelsDto): boolean {
-    const { colorFamily, exclusive, finish } = filters;
+    const { colorFamily, exclusive, finish, exposedCarbon } = filters;
+
+    if (exposedCarbon && !variant.exposedCarbon) return false;
 
     if (colorFamily?.length) {
       if (exclusive) {

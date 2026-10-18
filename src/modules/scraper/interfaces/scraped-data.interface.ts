@@ -34,6 +34,8 @@ export interface ScrapedVariantData {
   colorFamilies: string[];
   finish: string | null;
   graphicName: string | null;
+  exposedCarbon?: boolean;
+  isMono?: boolean;
   sku: string | null;
   imageUrls: string[];
 }

@@ -9,6 +9,8 @@ const baseVariant: VariantWithRelations = {
   sku: 'SKU-001',
   image_url: ['https://cdn/img1.webp', 'https://cdn/img2.webp'],
   color_families: ['blue'],
+  exposed_carbon: false,
+  is_mono: false,
   created_at: new Date(),
   updated_at: new Date(),
   deleted_at: null,

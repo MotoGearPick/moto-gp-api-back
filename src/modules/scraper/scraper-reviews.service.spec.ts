@@ -180,3 +180,32 @@ describe('ScraperReviewsService.approveSingle', () => {
     expect(prisma.scrape_review.update).not.toHaveBeenCalled(); // stays pending for a retry
   });
 });
+
+describe('ScraperReviewsService legacy color data', () => {
+  it('turns carbon/multicolor/"Mono" from old reviews into flags, counting carbon as black', async () => {
+    const legacy = {
+      ...review('r1', 'Red'),
+      raw_variant_data: { colorName: 'Red', graphicName: 'Mono', colorFamilies: ['red', 'carbon', 'multicolor'], imageUrls: ['https://brand.example/red.jpg'] },
+    };
+    const create = jest.fn(async () => ({ id: 'v1' }));
+    const tx = {
+      brand: { upsert: jest.fn(async () => ({ id: 'b1' })) },
+      helmet_model: { upsert: jest.fn(async () => ({ id: 'm1' })) },
+      helmet_model_variant: { findFirst: jest.fn(async () => null), create },
+      helmet_model_size: { findMany: jest.fn(async () => []), createMany: jest.fn() },
+    };
+    const prisma = {
+      scrape_review: { findMany: jest.fn(async () => [legacy]), updateMany: jest.fn() },
+      helmet_model_variant: { updateMany: jest.fn(async () => ({ count: 1 })), update: jest.fn() },
+      $transaction: jest.fn(async (fn) => fn(tx)),
+    };
+    const cdnImages = { processVariantImages: jest.fn(async () => []) };
+    const service = new ScraperReviewsService(prisma as any, cdnImages as any, { invalidateHelmet: jest.fn() } as any, { upsertModel: jest.fn() } as any);
+
+    await service.batchApprove('rf-1400', {});
+
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ color_families: ['red', 'black'], exposed_carbon: true, is_mono: true }),
+    }));
+  });
+});

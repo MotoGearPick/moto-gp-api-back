@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
-import { ColorFamily } from '../../gear/helmets/enums';
+import { IsArray, IsBoolean, IsEnum, IsIn, IsOptional, IsString } from 'class-validator';
 import { HelmetFinish } from '../../gear/helmets/enums';
+import { REVIEW_COLOR_FAMILIES } from './scraped-variant-data.dto';
 
 /**
  * Variant fields a color reviewer is allowed to edit.
@@ -18,11 +18,11 @@ export class ReviewVariantDto {
   @IsString()
   colorName?: string;
 
-  @ApiPropertyOptional({ enum: ColorFamily, isArray: true })
+  @ApiPropertyOptional({ enum: REVIEW_COLOR_FAMILIES, isArray: true })
   @IsOptional()
   @IsArray()
-  @IsEnum(ColorFamily, { each: true })
-  colorFamilies?: ColorFamily[];
+  @IsIn(REVIEW_COLOR_FAMILIES, { each: true })
+  colorFamilies?: string[];
 
   @ApiPropertyOptional({ enum: HelmetFinish, nullable: true })
   @IsOptional()
@@ -33,4 +33,14 @@ export class ReviewVariantDto {
   @IsOptional()
   @IsString()
   graphicName?: string | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  exposedCarbon?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isMono?: boolean;
 }

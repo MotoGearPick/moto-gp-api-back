@@ -193,6 +193,8 @@ model helmet_model_variant {
   created_at       DateTime           @default(now()) @db.Timestamptz(6)
   updated_at       DateTime           @default(now()) @db.Timestamptz(6)
   color_families   color_family[]
+  exposed_carbon   Boolean            @default(false)
+  is_mono          Boolean            @default(false)
   deleted_at       DateTime?          @db.Timestamptz(6)
   helmet_inventory helmet_inventory[]
   helmet_model     helmet_model       @relation(fields: [helmet_id], references: [id], onDelete: Cascade, map: "helmet_variant_helmet_id_fkey")
@@ -258,8 +260,6 @@ enum color_family {
   silver
   gold
   brown
-  carbon
-  multicolor
   bronze
   hi_vis
   iridescent

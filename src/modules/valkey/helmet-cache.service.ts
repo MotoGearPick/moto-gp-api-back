@@ -6,6 +6,7 @@ import { VALKEY_CLIENT } from './valkey.constants';
 export interface CachedVariantFilter {
   colorFamilies: string[];
   finish: string | null;
+  exposedCarbon: boolean;
 }
 
 export interface CachedCatalogItem {
@@ -125,6 +126,7 @@ export class HelmetCacheService {
             color_name: true,
             graphic_name: true,
             color_families: true,
+            exposed_carbon: true,
             finish: true,
             image_url: true,
             helmet_inventory: {
@@ -262,6 +264,7 @@ export class HelmetCacheService {
       _variants: variants.map((v: any) => ({
         colorFamilies: v.color_families ?? [],
         finish: v.finish ?? null,
+        exposedCarbon: v.exposed_carbon,
       })),
     };
   }
@@ -311,6 +314,8 @@ export class HelmetCacheService {
           colorFamilies: v.color_families ?? [],
           finish: v.finish,
           graphicName: v.graphic_name,
+          exposedCarbon: v.exposed_carbon,
+          isMono: v.is_mono,
           images: v.image_url ?? [],
           inventory: inventory.map((i: any) => ({
             size: i.helmet_size ? { id: i.helmet_size.id, sizeLabel: i.helmet_size.size_label } : null,

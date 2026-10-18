@@ -115,6 +115,8 @@ export class ScraperReviewsService {
       colorFamilies: flat.colorFamilies ?? [],
       finish: flat.finish ?? null,
       graphicName: flat.graphicName ?? null,
+      exposedCarbon: flat.exposedCarbon,
+      isMono: flat.isMono,
       sku: flat.sku ?? null,
       imageUrls: flat.imageUrls ?? flat.images ?? [],
     };
@@ -621,6 +623,22 @@ export class ScraperReviewsService {
   }
 
   /**
+   * Reviews scraped before 2026-10-18 tag carbon/multicolor as colors and solid colors as graphic "Mono".
+   * Carbon weave counts as black for color filters.
+   */
+  private normalizeVariantColors(v: ScrapedVariantData) {
+    const families = v.colorFamilies ?? [];
+    const carbon = families.includes('carbon');
+    const colorFamilies = families.filter((c) => c !== 'carbon' && c !== 'multicolor');
+    if (carbon && !colorFamilies.includes('black')) colorFamilies.push('black');
+    return {
+      colorFamilies,
+      exposedCarbon: !!v.exposedCarbon || carbon,
+      isMono: !!v.isMono || v.graphicName?.trim().toLowerCase() === 'mono',
+    };
+  }
+
+  /**
    * Find the variant by (helmet, color, graphic) and update it, or create it hidden.
    * Not a Prisma `upsert`: Prisma rejects null inside a compound-unique `where`, and most
    * variants have no graphic. The NULLS NOT DISTINCT index still blocks a duplicate insert.
@@ -631,8 +649,11 @@ export class ScraperReviewsService {
     helmetId: string,
     variantData: ScrapedVariantData,
   ): Promise<string> {
+    const { colorFamilies, exposedCarbon, isMono } = this.normalizeVariantColors(variantData);
     const fields = {
-      color_families: variantData.colorFamilies as color_family[],
+      color_families: colorFamilies as color_family[],
+      exposed_carbon: exposedCarbon,
+      is_mono: isMono,
       finish: (variantData.finish as helmet_finish) ?? undefined,
       graphic_name: variantData.graphicName,
       sku: variantData.sku,

@@ -12,8 +12,6 @@ export enum ColorFamily {
   SILVER = 'silver',
   GOLD = 'gold',
   BROWN = 'brown',
-  CARBON = 'carbon',
-  MULTICOLOR = 'multicolor',
   BRONZE = 'bronze',
   HI_VIS = 'hi_vis',
   IRIDISCENT = 'iridescent',

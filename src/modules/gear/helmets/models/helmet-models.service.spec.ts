@@ -25,7 +25,7 @@ function item(overrides: Partial<CachedCatalogItem> & { closureType?: string | n
     variantImages: [{ colorName: 'Black', image: null }],
     priceFrom: null,
     currency: null,
-    _variants: [{ colorFamilies: ['black'], finish: 'matte' }],
+    _variants: [{ colorFamilies: ['black'], finish: 'matte', exposedCarbon: false }],
     ...rest,
   };
 }
@@ -41,7 +41,8 @@ describe('HelmetModelsService.findAll', () => {
   const catalog = [
     item({ slug: 'k6', name: 'K6', brand: { id: 'a', name: 'AGV', slug: 'agv' }, closureType: 'double_d_ring' }),
     item({ slug: 'rf-1400', name: 'RF-1400', closureType: 'micrometric' }),
-    item({ slug: 'neotec-3', name: 'Neotec 3', closureType: 'micrometric', _variants: [{ colorFamilies: ['white'], finish: 'gloss' }] }),
+    item({ slug: 'neotec-3', name: 'Neotec 3', closureType: 'micrometric', _variants: [{ colorFamilies: ['white'], finish: 'gloss', exposedCarbon: false }] }),
+    item({ slug: 'pista', name: 'Pista', brand: { id: 'a', name: 'AGV', slug: 'agv' }, closureType: null, _variants: [{ colorFamilies: ['red', 'black'], finish: 'gloss', exposedCarbon: true }] }),
     item({ slug: 'gt-air', name: 'GT-Air', closureType: null }),
   ];
   const service = new HelmetModelsService({ getCatalog: async () => catalog } as unknown as HelmetCacheService);
@@ -66,6 +67,11 @@ describe('HelmetModelsService.findAll', () => {
     const res = await service.findAll(dto);
     expect(res.data.map((d) => d.slug)).toEqual(['neotec-3']);
     expect(res.data[0].variantsCount).toBe(1);
+  });
+
+  it('matches a red/black carbon helmet by its colors, and by exposed carbon', async () => {
+    expect(await slugs({ colorFamily: ['black', 'red'], exclusive: 'true' })).toEqual(['pista']);
+    expect(await slugs({ exposedCarbon: 'true' })).toEqual(['pista']);
   });
 
   it('lets the public listing request the whole catalog, but no more than 1000', async () => {

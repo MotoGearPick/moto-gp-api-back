@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
   IsOptional,
   IsString,
@@ -21,6 +22,14 @@ export class CreateHelmetVariantDto {
   @IsOptional()
   @IsString()
   graphicName?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  exposedCarbon?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isMono?: boolean;
 
   @IsOptional()
   @IsString()

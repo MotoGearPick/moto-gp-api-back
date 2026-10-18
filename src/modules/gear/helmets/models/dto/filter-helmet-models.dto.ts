@@ -111,6 +111,11 @@ export class FilterHelmetModelsDto extends PaginationDto {
   @IsOptional()
   @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
+  exposedCarbon?: boolean;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
   sunVisor?: boolean;
 
   @IsOptional()

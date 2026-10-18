@@ -278,6 +278,8 @@ export class HelmetModelsAdminService {
           color_families: true,
           finish: true,
           graphic_name: true,
+          exposed_carbon: true,
+          is_mono: true,
           image_url: true,
           deleted_at: true,
           created_at: true,
@@ -368,6 +370,8 @@ export class HelmetModelsAdminService {
       colorFamilies: v.color_families,
       finish: v.finish,
       graphicName: v.graphic_name,
+      exposedCarbon: v.exposed_carbon,
+      isMono: v.is_mono,
       images: v.image_url,
       inventory: allInventory.map((i: any) => ({
         id: i.id,
