@@ -17,6 +17,9 @@ import { SearchSyncService } from '../../../search/search-sync.service';
 import { CreateHelmetVariantDto } from './dto/create-helmet-variant.dto';
 import { UpdateHelmetVariantDto } from './dto/update-helmet-variant.dto';
 import { FilterHelmetVariantsDto } from './dto/filter-helmet-variants.dto';
+import { variantAppearanceWhere } from './variant-appearance-where';
+
+const VARIANT_SORT_COLUMNS = { colorName: 'color_name', createdAt: 'created_at', updatedAt: 'updated_at' } as const;
 
 @Injectable()
 export class HelmetVariantsService {
@@ -33,7 +36,7 @@ export class HelmetVariantsService {
       model: this.db.helmet_model_variant,
       pagination: filters,
       where,
-      orderBy: { color_name: 'asc' },
+      orderBy: { [VARIANT_SORT_COLUMNS[filters.sortBy ?? 'colorName']]: filters.order ?? 'asc' },
       include: this.buildAdminInclude(),
     });
 
@@ -173,20 +176,20 @@ export class HelmetVariantsService {
       ...(!showDeleted && { deleted_at: null }),
 
       // Variant filters
-      ...(filters.colorFamily && {
-        color_families: filters.mono
-          ? // Modo mono: exactamente ese color (sin multicolor)
-            { equals: [filters.colorFamily as color_family] }
-          : // Modo normal: tiene ese color entre otros
-            { has: filters.colorFamily as color_family },
-      }),
-      ...(filters.finish && { finish: filters.finish as helmet_finish }),
+      ...variantAppearanceWhere(filters),
+      ...(filters.missingImages && { image_url: { isEmpty: true } }),
+      AND: [
+        ...(filters.missingSku ? [{ OR: [{ sku: null }, { sku: '' }] }] : []),
+        ...(filters.missingGraphic
+          ? [{ OR: [{ graphic_name: null }, { graphic_name: '' }, { graphic_name: { equals: 'mono', mode: 'insensitive' as const } }] }]
+          : []),
+      ],
 
       // Model filters
       helmet_model: {
         ...(!showDeleted && { deleted_at: null }),
         ...(filters.modelId && { id: filters.modelId }),
-        ...(filters.brandSlug && { brand: { slug: filters.brandSlug, deleted_at: null } }),
+        ...(filters.brandSlug?.length && { brand: { slug: { in: filters.brandSlug }, deleted_at: null } }),
         ...(filters.shape?.length && { helmet_shape: { hasSome: filters.shape as helmet_shape[] } }),
         ...(filters.purpose?.length && { helmet_purpose: { hasSome: filters.purpose as helmet_purpose[] } }),
         ...(filters.shellMaterial?.length && { shell_material: { hasSome: filters.shellMaterial as helmet_shell_material[] } }),
@@ -212,8 +215,12 @@ export class HelmetVariantsService {
         helmet_inventory: {
           some: {
             ...(filters.inStock !== undefined && { in_stock: filters.inStock }),
-            ...(filters.minPrice !== undefined && { price: { gte: filters.minPrice } }),
-            ...(filters.maxPrice !== undefined && { price: { lte: filters.maxPrice } }),
+            ...((filters.minPrice !== undefined || filters.maxPrice !== undefined) && {
+              price: {
+                ...(filters.minPrice !== undefined && { gte: filters.minPrice }),
+                ...(filters.maxPrice !== undefined && { lte: filters.maxPrice }),
+              },
+            }),
             ...(filters.sizeLabel && { helmet_size: { size_label: filters.sizeLabel } }),
           },
         },
@@ -224,6 +231,7 @@ export class HelmetVariantsService {
         OR: [
           { color_name: { contains: filters.search, mode: 'insensitive' } },
           { graphic_name: { contains: filters.search, mode: 'insensitive' } },
+          { sku: { contains: filters.search, mode: 'insensitive' } },
           { helmet_model: { name: { contains: filters.search, mode: 'insensitive' } } },
           { helmet_model: { brand: { name: { contains: filters.search, mode: 'insensitive' } } } },
         ],

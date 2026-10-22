@@ -1,12 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
-
-const toArray = ({ value }: { value: unknown }) => {
-  if (Array.isArray(value)) return value;
-  if (typeof value === 'string' && value.length) return value.split(',');
-  return value;
-};
+import { toArray } from '../../../common/transforms';
 
 export class SearchQueryDto {
   @ApiPropertyOptional({ description: 'Search text — matches brand, model, graphic, color, sku.' })

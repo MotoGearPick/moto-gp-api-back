@@ -11,6 +11,7 @@ import {
   Min,
 } from 'class-validator';
 import { PaginationDto } from '../../../../../common/pagination';
+import { toArray } from '../../../../../common/transforms';
 import {
   ColorFamily,
   HelmetCertification,
@@ -37,37 +38,37 @@ export class FilterHelmetModelsDto extends PaginationDto {
 
   @IsOptional()
   @IsArray()
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   brandSlug?: string[];
 
   @IsOptional()
   @IsArray()
   @IsEnum(HelmetShape, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   shape?: HelmetShape[];
 
   @IsOptional()
   @IsArray()
   @IsEnum(HelmetPurpose, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   purpose?: HelmetPurpose[];
 
   @IsOptional()
   @IsArray()
   @IsEnum(HelmetShellMaterial, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   shellMaterial?: HelmetShellMaterial[];
 
   @IsOptional()
   @IsArray()
   @IsEnum(HelmetClosureType, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   closureType?: HelmetClosureType[];
 
   @IsOptional()
   @IsArray()
   @IsEnum(VisorPinlock, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   visorPinlockCompatible?: VisorPinlock[];
 
   @IsOptional()
@@ -82,7 +83,7 @@ export class FilterHelmetModelsDto extends PaginationDto {
 
   @IsOptional()
   @IsEnum(HelmetCertification, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   certification?: HelmetCertification[];
 
   @IsOptional()
@@ -94,13 +95,13 @@ export class FilterHelmetModelsDto extends PaginationDto {
   @IsOptional()
   @IsArray()
   @IsEnum(HelmetFinish, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   finish?: HelmetFinish[];
 
   @IsOptional()
   @IsArray()
   @IsEnum(ColorFamily, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   colorFamily?: ColorFamily[];
 
   @IsOptional()

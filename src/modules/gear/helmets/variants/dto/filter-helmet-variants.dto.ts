@@ -3,6 +3,7 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsIn,
   IsInt,
   IsNumber,
   IsOptional,
@@ -13,6 +14,7 @@ import {
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../../../../common/pagination';
+import { toArray } from '../../../../../common/transforms';
 import {
   ColorFamily,
   HelmetCertification,
@@ -27,30 +29,72 @@ import {
 export class FilterHelmetVariantsDto extends PaginationDto {
   // ─── Búsqueda general ────────────────────────────────────────────────────────
 
-  @ApiPropertyOptional({ description: 'Busca en nombre del modelo, marca, color y gráfico' })
+  @ApiPropertyOptional({ description: 'Busca en nombre del modelo, marca, color, gráfico y SKU' })
   @IsOptional()
   @IsString()
   search?: string;
 
+  @ApiPropertyOptional({ enum: ['colorName', 'createdAt', 'updatedAt'] })
+  @IsOptional()
+  @IsIn(['colorName', 'createdAt', 'updatedAt'])
+  sortBy?: 'colorName' | 'createdAt' | 'updatedAt';
+
+  @ApiPropertyOptional({ enum: ['asc', 'desc'] })
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  order?: 'asc' | 'desc';
+
   // ─── Filtros de variante ─────────────────────────────────────────────────────
 
-  @ApiPropertyOptional({ enum: ColorFamily })
+  @ApiPropertyOptional({ enum: ColorFamily, isArray: true, description: 'La variante tiene TODOS estos colores' })
   @IsOptional()
-  @IsEnum(ColorFamily)
-  colorFamily?: ColorFamily;
+  @IsArray()
+  @IsEnum(ColorFamily, { each: true })
+  @Transform(toArray)
+  colorFamily?: ColorFamily[];
 
-  @ApiPropertyOptional({
-    description: 'Si es true, solo retorna variantes con EXACTAMENTE ese color (no multicolor). Requiere colorFamily.',
-  })
+  @ApiPropertyOptional({ description: 'Si es true, la variante tiene SOLO esos colores. Requiere colorFamily.' })
   @IsOptional()
   @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
-  mono?: boolean;
+  exclusive?: boolean;
 
-  @ApiPropertyOptional({ enum: HelmetFinish })
+  @ApiPropertyOptional()
   @IsOptional()
-  @IsEnum(HelmetFinish)
-  finish?: HelmetFinish;
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  missingImages?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  missingSku?: boolean;
+
+  @ApiPropertyOptional({ description: 'Gráfico vacío o "Mono" (pendiente de restaurar)' })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  missingGraphic?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  exposedCarbon?: boolean;
+
+  @ApiPropertyOptional({ description: 'Variantes de color sólido, sin gráfico' })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  isMono?: boolean;
+
+  @ApiPropertyOptional({ enum: HelmetFinish, isArray: true })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(HelmetFinish, { each: true })
+  @Transform(toArray)
+  finish?: HelmetFinish[];
 
   // ─── Filtros de modelo ───────────────────────────────────────────────────────
 
@@ -59,30 +103,32 @@ export class FilterHelmetVariantsDto extends PaginationDto {
   @IsUUID()
   modelId?: string;
 
-  @ApiPropertyOptional({ description: 'Slug de la marca' })
+  @ApiPropertyOptional({ description: 'Slugs de marca', isArray: true })
   @IsOptional()
-  @IsString()
-  brandSlug?: string;
+  @IsArray()
+  @IsString({ each: true })
+  @Transform(toArray)
+  brandSlug?: string[];
 
   @ApiPropertyOptional({ enum: HelmetShape, isArray: true })
   @IsOptional()
   @IsArray()
   @IsEnum(HelmetShape, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   shape?: HelmetShape[];
 
   @ApiPropertyOptional({ enum: HelmetPurpose, isArray: true })
   @IsOptional()
   @IsArray()
   @IsEnum(HelmetPurpose, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   purpose?: HelmetPurpose[];
 
   @ApiPropertyOptional({ enum: HelmetShellMaterial, isArray: true })
   @IsOptional()
   @IsArray()
   @IsEnum(HelmetShellMaterial, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   shellMaterial?: HelmetShellMaterial[];
 
   @ApiPropertyOptional({ enum: HelmetClosureType })
@@ -94,7 +140,7 @@ export class FilterHelmetVariantsDto extends PaginationDto {
   @IsOptional()
   @IsArray()
   @IsEnum(VisorPinlock, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   visorPinlockCompatible?: VisorPinlock[];
 
   @ApiPropertyOptional()
@@ -113,7 +159,7 @@ export class FilterHelmetVariantsDto extends PaginationDto {
   @IsOptional()
   @IsArray()
   @IsEnum(HelmetCertification, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   certification?: HelmetCertification[];
 
   @ApiPropertyOptional({ minimum: 1, description: 'Número mínimo de tamaños de shell disponibles' })

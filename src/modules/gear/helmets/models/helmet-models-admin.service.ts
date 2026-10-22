@@ -9,12 +9,21 @@ import {
   visor_pinlock,
 } from '@prisma/products-client';
 import { paginate } from '../../../../common/pagination';
+import { hasAppearanceFilter, variantAppearanceWhere } from '../variants/variant-appearance-where';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { HelmetCacheService } from '../../../valkey/helmet-cache.service';
 import { SearchSyncService } from '../../../search/search-sync.service';
 import { CreateHelmetModelDto } from './dto/create-helmet-model.dto';
 import { UpdateHelmetModelDto } from './dto/update-helmet-model.dto';
 import { FilterHelmetModelsAdminDto } from './dto/filter-helmet-models-admin.dto';
+
+const MODEL_SORT_COLUMNS = {
+  name: 'name',
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  safetyRating: 'safety_rating',
+  weightGrams: 'weight_grams',
+} as const;
 
 @Injectable()
 export class HelmetModelsAdminService {
@@ -31,7 +40,7 @@ export class HelmetModelsAdminService {
       model: this.db.helmet_model,
       pagination: filters,
       where,
-      orderBy: { name: 'asc' },
+      orderBy: { [MODEL_SORT_COLUMNS[filters.sortBy ?? 'name']]: filters.order ?? 'asc' },
       select: this.buildListSelect(),
     });
 
@@ -184,7 +193,10 @@ export class HelmetModelsAdminService {
       ...(onlyDeleted && { NOT: { deleted_at: null } }),
       ...(filters.id && { id: filters.id }),
       ...(filters.brandId && { brand_id: filters.brandId }),
-      ...(filters.brandSlug && { brand: { slug: filters.brandSlug } }),
+      ...(filters.brandSlug?.length && { brand: { slug: { in: filters.brandSlug } } }),
+      ...(hasAppearanceFilter(filters) && {
+        helmet_model_variant: { some: { deleted_at: null, ...variantAppearanceWhere(filters) } },
+      }),
       ...(filters.name && { name: { contains: filters.name, mode: 'insensitive' } }),
       ...(filters.slug && { slug: { contains: filters.slug, mode: 'insensitive' } }),
       ...(filters.shape?.length && { helmet_shape: { hasSome: filters.shape as helmet_shape[] } }),
@@ -194,6 +206,8 @@ export class HelmetModelsAdminService {
       ...(filters.visorPinlockCompatible?.length && { visor_pinlock_compatible: { hasSome: filters.visorPinlockCompatible as visor_pinlock[] } }),
       ...(filters.visorPinlockIncluded !== undefined && { visor_pinlock_included: filters.visorPinlockIncluded }),
       ...(filters.tearOffCompatible !== undefined && { tear_off_compatible: filters.tearOffCompatible }),
+      ...(filters.visorAntiScratch !== undefined && { visor_anti_scratch: filters.visorAntiScratch }),
+      ...(filters.visorAntiFog !== undefined && { visor_anti_fog: filters.visorAntiFog }),
       ...(filters.sunVisor !== undefined && { sun_visor: filters.sunVisor }),
       ...(filters.intercomReady !== undefined && { intercom_ready: filters.intercomReady }),
       ...(filters.removableLining !== undefined && { removable_lining: filters.removableLining }),
@@ -263,6 +277,7 @@ export class HelmetModelsAdminService {
         select: { image_url: true },
         take: 1,
       },
+      _count: { select: { helmet_model_variant: { where: { deleted_at: null } } } },
     };
   }
 
@@ -325,6 +340,7 @@ export class HelmetModelsAdminService {
       certification: raw.certification,
       includedAccessories: raw.included_accessories,
       images: raw.helmet_model_variant?.[0]?.image_url ?? [],
+      variantCount: raw._count?.helmet_model_variant ?? 0,
       createdAt: raw.created_at,
       updatedAt: raw.updated_at,
       deletedAt: raw.deleted_at,

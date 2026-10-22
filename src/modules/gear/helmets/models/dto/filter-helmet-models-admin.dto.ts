@@ -3,6 +3,7 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsIn,
   IsInt,
   IsNumber,
   IsOptional,
@@ -12,9 +13,12 @@ import {
   Min,
 } from 'class-validator';
 import { PaginationDto } from '../../../../../common/pagination';
+import { toArray } from '../../../../../common/transforms';
 import {
+  ColorFamily,
   HelmetCertification,
   HelmetClosureType,
+  HelmetFinish,
   HelmetPurpose,
   HelmetShape,
   HelmetShellMaterial,
@@ -31,8 +35,46 @@ export class FilterHelmetModelsAdminDto extends PaginationDto {
   brandId?: string;
 
   @IsOptional()
-  @IsString()
-  brandSlug?: string;
+  @IsArray()
+  @IsString({ each: true })
+  @Transform(toArray)
+  brandSlug?: string[];
+
+  @IsOptional()
+  @IsIn(['name', 'createdAt', 'updatedAt', 'safetyRating', 'weightGrams'])
+  sortBy?: 'name' | 'createdAt' | 'updatedAt' | 'safetyRating' | 'weightGrams';
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  order?: 'asc' | 'desc';
+
+  // Variant appearance: a model matches when at least one live variant matches all of these.
+  @IsOptional()
+  @IsArray()
+  @IsEnum(ColorFamily, { each: true })
+  @Transform(toArray)
+  colorFamily?: ColorFamily[];
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  exclusive?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @IsEnum(HelmetFinish, { each: true })
+  @Transform(toArray)
+  finish?: HelmetFinish[];
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  exposedCarbon?: boolean;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  isMono?: boolean;
 
   @IsOptional()
   @IsString()
@@ -45,19 +87,19 @@ export class FilterHelmetModelsAdminDto extends PaginationDto {
   @IsOptional()
   @IsArray()
   @IsEnum(HelmetShape, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   shape?: HelmetShape[];
 
   @IsOptional()
   @IsArray()
   @IsEnum(HelmetPurpose, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   purpose?: HelmetPurpose[];
 
   @IsOptional()
   @IsArray()
   @IsEnum(HelmetShellMaterial, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   shellMaterial?: HelmetShellMaterial[];
 
   @IsOptional()
@@ -67,7 +109,7 @@ export class FilterHelmetModelsAdminDto extends PaginationDto {
   @IsOptional()
   @IsArray()
   @IsEnum(VisorPinlock, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   visorPinlockCompatible?: VisorPinlock[];
 
   @IsOptional()
@@ -79,6 +121,16 @@ export class FilterHelmetModelsAdminDto extends PaginationDto {
   @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
   tearOffCompatible?: boolean;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  visorAntiScratch?: boolean;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  visorAntiFog?: boolean;
 
   @IsOptional()
   @Transform(({ value }) => value === 'true' || value === true)
@@ -134,7 +186,7 @@ export class FilterHelmetModelsAdminDto extends PaginationDto {
   @IsOptional()
   @IsArray()
   @IsEnum(HelmetCertification, { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toArray)
   certification?: HelmetCertification[];
 
   @IsOptional()
