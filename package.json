@@ -27,7 +27,9 @@
     "prisma:migrate:deploy": "prisma migrate deploy --config=prisma/products/prisma.config.ts",
     "prisma:studio": "dotenv -e .env.local -- prisma studio --config=prisma/products/prisma.config.ts",
     "reindex:local": "dotenv -e .env.local -- ts-node scripts/reindex.ts",
-    "reindex:prod": "dotenv -e .env.prod -- ts-node scripts/reindex.ts"
+    "reindex:prod": "dotenv -e .env.prod -- ts-node scripts/reindex.ts",
+    "migrate-images:local": "dotenv -e .env.local -- ts-node scripts/migrate-legacy-images.ts",
+    "migrate-images:prod": "dotenv -e .env.prod -- ts-node scripts/migrate-legacy-images.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1030.0",
