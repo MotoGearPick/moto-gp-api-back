@@ -1,9 +1,9 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../src/app.module';
-import { PrismaService } from '../src/prisma/prisma.service';
-import { CdnImagesService } from '../src/modules/cdn/cdn-images.service';
-import { HelmetCacheService } from '../src/modules/valkey/helmet-cache.service';
-import { SearchSyncService } from '../src/modules/search/search-sync.service';
+import { AppModule } from '../app.module';
+import { PrismaService } from '../prisma/prisma.service';
+import { CdnImagesService } from '../modules/cdn/cdn-images.service';
+import { HelmetCacheService } from '../modules/valkey/helmet-cache.service';
+import { SearchSyncService } from '../modules/search/search-sync.service';
 
 /**
  * Variants approved before the CDN module (2026-05-06) store the brand's raw image URLs
@@ -11,6 +11,8 @@ import { SearchSyncService } from '../src/modules/search/search-sync.service';
  * URLs for keys, keeping order and any entries that are already keys.
  *
  * Dry run by default; pass --apply to write.
+ *
+ * Prod (compiled into the image): docker compose run --rm --no-deps api node dist/scripts/migrate-legacy-images.js [--apply]
  */
 const isRawUrl = (img: string) => /^https?:\/\//i.test(img);
 
